@@ -19,39 +19,51 @@ var Service = function(params) {
   var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'appWebweaver'], {});
   debuglog.isEnabled && debuglog('configuration: %s', JSON.stringify(pluginCfg));
 
-  if (pluginCfg.enabled !== false) {
-    var app1 = express();
-
-    app1.use('*', function(req, res, next) {
-      process.nextTick(function() {
-        debuglog('=@ example receives a new request:');
-        debuglog(' - Invoker IP: %s / %s', req.ip, JSON.stringify(req.ips));
-        debuglog(' - protocol: ' + req.protocol);
-        debuglog(' - host: ' + req.hostname);
-        debuglog(' - path: ' + req.path);
-        debuglog(' - URL: ' + req.url);
-        debuglog(' - originalUrl: ' + req.originalUrl);
-        debuglog(' - body: ' + JSON.stringify(req.body));
-        debuglog(' - user-agent: ' + req.headers['user-agent']);
-      });
-      next();
-    });
-
-    var app2 = express();
-    app2.get('/example/:id', function(req, res) {
-      res.status(200).json({
-        message: 'example [' + req.params.id + '] request successfully'
-      });
-    });
-
-    params.webweaverService.inject({
+  var getLayer1 = function(branches) {
+    return {
       name: 'app1',
       path: ['*'],
-      interceptor: [],
-      middleware: app1
-    });
+      middleware: function(req, res, next) {
+        process.nextTick(function() {
+          debuglog('=@ example receives a new request:');
+          debuglog(' - Invoker IP: %s / %s', req.ip, JSON.stringify(req.ips));
+          debuglog(' - protocol: ' + req.protocol);
+          debuglog(' - host: ' + req.hostname);
+          debuglog(' - path: ' + req.path);
+          debuglog(' - URL: ' + req.url);
+          debuglog(' - originalUrl: ' + req.originalUrl);
+          debuglog(' - body: ' + JSON.stringify(req.body));
+          debuglog(' - user-agent: ' + req.headers['user-agent']);
+        });
+        next();
+      },
+      branches: branches
+    }
+  }
 
-    params.webweaverService.outlet.use(app2);
+  var getLayer2 = function(branches) {
+    return {
+      name: 'app2',
+      middleware: (function() {
+        var app2 = express();
+        app2.get('/example/:id', function(req, res) {
+          res.status(200).json({
+            message: 'example [' + req.params.id + '] request successfully'
+          });
+        });
+        return app2;
+      })(),
+      branches: branches
+    }
+  }
+
+  if (pluginCfg.enabled !== false) {
+    params.webweaverService.build([
+      getLayer1([
+        params.webweaverService.getDefaultRedirectLayer(null, '/example/123'),
+        getLayer2()
+      ])
+    ]);
   }
 
   debuglog.isEnabled && debuglog(' - constructor end!');

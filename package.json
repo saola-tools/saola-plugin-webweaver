@@ -1,6 +1,6 @@
 {
   "name": "app-webweaver",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Devebot express-based webweaver layerware",
   "homepage": "https://github.com/devebot/app-webweaver.git",
   "author": {
@@ -20,18 +20,18 @@
     "devebot-plugin"
   ],
   "peerDependencies": {
-    "app-webserver": "^0.1.14",
-    "devebot": "^0.1.24"
+    "app-webserver": "^0.2.0",
+    "devebot": "^0.2.0"
   },
   "dependencies": {
-    "app-webserver": "^0.1.14",
+    "app-webserver": "^0.2.0",
     "body-parser": "^1.15.0",
     "compression": "^1.6.1",
     "connect-mongo": "^1.1.0",
     "connect-redis": "^3.0.2",
     "cookie-parser": "^1.4.1",
     "csurf": "^1.8.3",
-    "devebot": "^0.1.24",
+    "devebot": "^0.2.0",
     "ejs": "^2.5.2",
     "express": "^4.13.4",
     "express-session": "^1.13.0",

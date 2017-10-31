@@ -44,8 +44,14 @@ var Service = function(params) {
       });
     });
 
-    params.webweaverService.apporo.use(app1);
-    params.webweaverService.apporo.use(app2);
+    params.webweaverService.inject({
+      name: 'app1',
+      path: ['*'],
+      interceptor: [],
+      middleware: app1
+    });
+
+    params.webweaverService.outlet.use(app2);
   }
 
   debuglog.isEnabled && debuglog(' - constructor end!');
@@ -62,9 +68,6 @@ Service.argumentSchema = {
       "type": "object"
     },
     "profileConfig": {
-      "type": "object"
-    },
-    "generalConfig": {
       "type": "object"
     },
     "loggingFactory": {

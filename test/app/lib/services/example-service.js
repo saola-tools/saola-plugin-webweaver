@@ -60,8 +60,10 @@ var Service = function(params) {
   if (pluginCfg.enabled !== false) {
     params.webweaverService.build([
       getLayer1([
-        params.webweaverService.getDefaultRedirectLayer(null, '/example/123'),
-        getLayer2()
+        params.webweaverService.getDefaultRedirectLayer(),
+        params.webweaverService.getSessionLayer([
+          getLayer2()
+        ])
       ])
     ]);
   }

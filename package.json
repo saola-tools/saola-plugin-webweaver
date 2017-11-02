@@ -1,6 +1,6 @@
 {
   "name": "app-webweaver",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Devebot express-based webweaver layerware",
   "homepage": "https://github.com/devebot/app-webweaver.git",
   "author": {

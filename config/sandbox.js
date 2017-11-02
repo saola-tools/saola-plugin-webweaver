@@ -8,6 +8,13 @@ module.exports = {
       session: {
         name: 'sessionId',
         secret: 'd0bi3td4y',
+        cookie: {
+          secure: true,
+          httpOnly: true,
+          domain: 'devebot.com',
+          path: 'relative/path',
+          expires: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+        },
         store: {
           type: 'redis',
           url: 'redis://localhost:6379'

@@ -58,14 +58,14 @@ var Service = function(params) {
   }
 
   if (pluginCfg.enabled !== false) {
-    params.webweaverService.build([
+    params.webweaverService.push([
       getLayer1([
         params.webweaverService.getDefaultRedirectLayer(),
         params.webweaverService.getSessionLayer([
           getLayer2()
         ])
       ])
-    ]);
+    ], 100);
   }
 
   debuglog.isEnabled && debuglog(' - constructor end!');

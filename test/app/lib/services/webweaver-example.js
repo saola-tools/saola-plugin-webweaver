@@ -14,9 +14,8 @@ var Service = function(params) {
 
   var self = this;
 
-  var logger = self.logger = params.loggingFactory.getLogger();
-
-  var pluginCfg = lodash.get(params, ['sandboxConfig', 'plugins', 'appWebweaver'], {});
+  var logger = params.loggingFactory.getLogger();
+  var pluginCfg = params.sandboxConfig;
   debuglog.isEnabled && debuglog('configuration: %s', JSON.stringify(pluginCfg));
 
   var getLayer1 = function(branches) {
@@ -59,34 +58,22 @@ var Service = function(params) {
 
   if (pluginCfg.enabled !== false) {
     params.webweaverService.push([
+      params.webweaverService.getDefaultRedirectLayer(),
       getLayer1([
-        params.webweaverService.getDefaultRedirectLayer(),
         params.webweaverService.getSessionLayer([
           getLayer2()
         ])
       ])
-    ], 100);
+    ], 500);
   }
 
   debuglog.isEnabled && debuglog(' - constructor end!');
 };
 
 Service.argumentSchema = {
-  "id": "exampleService",
+  "id": "webweaverExample",
   "type": "object",
   "properties": {
-    "sandboxName": {
-      "type": "string"
-    },
-    "sandboxConfig": {
-      "type": "object"
-    },
-    "profileConfig": {
-      "type": "object"
-    },
-    "loggingFactory": {
-      "type": "object"
-    },
     "webweaverService": {
       "type": "object"
     }

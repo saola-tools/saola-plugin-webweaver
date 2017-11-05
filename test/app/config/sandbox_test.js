@@ -1,4 +1,7 @@
 module.exports = {
+  application: {
+    enabled: true
+  },
   plugins: {
     appWebweaver: {
       defaultRedirectUrl: '/example/dashboard',

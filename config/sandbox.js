@@ -1,8 +1,5 @@
 module.exports = {
   plugins: {
-    appWebserver: {
-      legacyMode: false
-    },
     appWebweaver: {
       sslProtectedUrls: [],
       session: {

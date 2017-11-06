@@ -2,11 +2,11 @@
   "name": "app-webweaver",
   "version": "0.2.1",
   "description": "Devebot express-based webweaver layerware",
-  "homepage": "https://github.com/devebot/app-webweaver.git",
+  "homepage": "https://github.com/apporo/app-webweaver.git",
   "author": {
     "name": "apporo",
     "email": "apporo@devebot.com",
-    "url": "http://devebot.com"
+    "url": "https://github.com/apporo"
   },
   "main": "index.js",
   "scripts": {

@@ -1,3 +1,5 @@
+'use strict';
+
 var plugin = require('devebot').registerLayerware(__dirname, ['app-webserver']);
 
 var builtinPackages = [

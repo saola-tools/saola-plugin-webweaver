@@ -1,8 +1,9 @@
 'use strict';
 
 var Devebot = require('devebot');
+var chores = Devebot.require('chores');
 var lodash = Devebot.require('lodash');
-var debugx = Devebot.require('pinbug')('appWebweaver:service');
+var pinbug = Devebot.require('pinbug');
 
 var express = require('express');
 var session = require('express-session');
@@ -13,13 +14,19 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 
 var Service = function(params) {
-  debugx.enabled && debugx(' + constructor begin ...');
-
   params = params || {};
-
   var self = this;
 
+  var debugx = pinbug('app-webweaver:service');
+  var crateID = chores.getBlockRef(__filename, 'app-webweaver');
   var LX = params.loggingFactory.getLogger();
+  var LT = params.loggingFactory.getTracer();
+
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-begin' ],
+    text: ' + constructor start ...'
+  }));
+
   var pluginCfg = params.sandboxConfig;
 
   var apporo = express();
@@ -376,17 +383,12 @@ var Service = function(params) {
     }
   });
 
-  debugx.enabled && debugx(' - constructor end!');
+  LX.has('silly') && LX.log('silly', LT.toMessage({
+    tags: [ crateID, 'constructor-end' ],
+    text: ' - constructor has finished'
+  }));
 };
 
-Service.argumentSchema = {
-  "$id": "webweaverService",
-  "type": "object",
-  "properties": {
-    "webserverTrigger": {
-      "type": "object"
-    }
-  }
-};
+Service.referenceList = [ "webserverTrigger" ];
 
 module.exports = Service;

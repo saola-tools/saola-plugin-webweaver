@@ -3,12 +3,12 @@
 var Devebot = require('devebot');
 var lodash = Devebot.require('lodash');
 var loader = Devebot.require('loader');
-var debug = Devebot.require('debug');
-var debuglog = debug('appWebweaver:example');
+var pinbug = Devebot.require('pinbug');
 var express = require('express');
 
 var Service = function(params) {
-  debuglog.isEnabled && debuglog(' + constructor begin ...');
+  var debugx = pinbug('app-webweaver:example');
+  debugx.enabled && debugx(' + constructor begin ...');
 
   params = params || {};
 
@@ -16,7 +16,7 @@ var Service = function(params) {
 
   var logger = params.loggingFactory.getLogger();
   var pluginCfg = params.sandboxConfig;
-  debuglog.isEnabled && debuglog('configuration: %s', JSON.stringify(pluginCfg));
+  debugx.enabled && debugx('configuration: %s', JSON.stringify(pluginCfg));
 
   var getLayer1 = function(branches) {
     return {
@@ -24,15 +24,15 @@ var Service = function(params) {
       path: ['*'],
       middleware: function(req, res, next) {
         process.nextTick(function() {
-          debuglog('=@ example receives a new request:');
-          debuglog(' - Invoker IP: %s / %s', req.ip, JSON.stringify(req.ips));
-          debuglog(' - protocol: ' + req.protocol);
-          debuglog(' - host: ' + req.hostname);
-          debuglog(' - path: ' + req.path);
-          debuglog(' - URL: ' + req.url);
-          debuglog(' - originalUrl: ' + req.originalUrl);
-          debuglog(' - body: ' + JSON.stringify(req.body));
-          debuglog(' - user-agent: ' + req.headers['user-agent']);
+          debugx('=@ example receives a new request:');
+          debugx(' - Invoker IP: %s / %s', req.ip, JSON.stringify(req.ips));
+          debugx(' - protocol: ' + req.protocol);
+          debugx(' - host: ' + req.hostname);
+          debugx(' - path: ' + req.path);
+          debugx(' - URL: ' + req.url);
+          debugx(' - originalUrl: ' + req.originalUrl);
+          debugx(' - body: ' + JSON.stringify(req.body));
+          debugx(' - user-agent: ' + req.headers['user-agent']);
         });
         next();
       },
@@ -67,17 +67,9 @@ var Service = function(params) {
     ], 500);
   }
 
-  debuglog.isEnabled && debuglog(' - constructor end!');
+  debugx.enabled && debugx(' - constructor end!');
 };
 
-Service.argumentSchema = {
-  "id": "webweaverExample",
-  "type": "object",
-  "properties": {
-    "webweaverService": {
-      "type": "object"
-    }
-  }
-};
+Service.referenceList = [ "webweaverService" ];
 
 module.exports = Service;

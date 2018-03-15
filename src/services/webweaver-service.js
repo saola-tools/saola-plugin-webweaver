@@ -42,15 +42,15 @@ var Service = function(params) {
 
   var printRequestInfoInstance = function(req, res, next) {
     process.nextTick(function() {
-      debugx('=@ webweaver receives a new request:');
-      debugx(' - IP: %s / %s', req.ip, JSON.stringify(req.ips));
-      debugx(' - protocol: ' + req.protocol);
-      debugx(' - host: ' + req.hostname);
-      debugx(' - path: ' + req.path);
-      debugx(' - URL: ' + req.url);
-      debugx(' - originalUrl: ' + req.originalUrl);
-      debugx(' - body: ' + JSON.stringify(req.body));
-      debugx(' - user-agent: ' + req.headers['user-agent']);
+      debugx.enabled && debugx('=@ webweaver receives a new request:');
+      debugx.enabled && debugx(' - IP: %s / %s', req.ip, JSON.stringify(req.ips));
+      debugx.enabled && debugx(' - protocol: ' + req.protocol);
+      debugx.enabled && debugx(' - host: ' + req.hostname);
+      debugx.enabled && debugx(' - path: ' + req.path);
+      debugx.enabled && debugx(' - URL: ' + req.url);
+      debugx.enabled && debugx(' - originalUrl: ' + req.originalUrl);
+      debugx.enabled && debugx(' - body: ' + JSON.stringify(req.body));
+      debugx.enabled && debugx(' - user-agent: ' + req.headers['user-agent']);
     });
     next();
   }
@@ -73,10 +73,20 @@ var Service = function(params) {
       middleware: function(req, res, next) {
         if (req.client.authorized) {
           next();
-          debugx.enabled && debugx(" - Passed Client: %s", req.originalUrl);
+          LX.has('silly') && LX.log('silly', LT.add({
+            url: req.originalUrl
+          }).toMessage({
+            tags: [ crateID, 'url-ssl-protection-layer', 'passed' ],
+            text: ' - Passed Client: ${url}'
+          }));
         } else {
           res.json({"status":"Access denied"}, 401);
-          debugx.enabled && debugx(" - Denied client: %s", req.originalUrl);
+          LX.has('silly') && LX.log('silly', LT.add({
+            url: req.originalUrl
+          }).toMessage({
+            tags: [ crateID, 'url-ssl-protection-layer', 'denied' ],
+            text: ' - Denied Client: ${url}'
+          }));
         }
       },
       branches: branches
@@ -119,22 +129,45 @@ var Service = function(params) {
           sessionOpts.store = new fileStore({
             path: sessionStoreDef.path
           });
-          debugx.enabled && debugx(' - session.store ~ fileStore');
+          LX.has('silly') && LX.log('silly', LT.add({
+            sessionStoreType: 'fileStore',
+            urlOrPath: sessionStoreDef.path
+          }).toMessage({
+            tags: [ crateID, 'session-store-set' ],
+            text: ' - session.store ~ ${sessionStoreType}'
+          }));
           break;
         case 'redis':
           sessionOpts.store = new redisStore({
             url: sessionStoreDef.url
           });
-          debugx.enabled && debugx(' - session.store ~ redisStore');
+          LX.has('silly') && LX.log('silly', LT.add({
+            sessionStoreType: 'redisStore',
+            urlOrPath: sessionStoreDef.url
+          }).toMessage({
+            tags: [ crateID, 'session-store-set' ],
+            text: ' - session.store ~ ${sessionStoreType}'
+          }));
           break;
         case 'mongodb':
           sessionOpts.store = new mongoStore({
             url: sessionStoreDef.url
           });
-          debugx.enabled && debugx(' - session.store ~ mongoStore');
+          LX.has('silly') && LX.log('silly', LT.add({
+            sessionStoreType: 'mongoStore',
+            urlOrPath: sessionStoreDef.url
+          }).toMessage({
+            tags: [ crateID, 'session-store-set' ],
+            text: ' - session.store ~ ${sessionStoreType}'
+          }));
           break;
         default:
-          debugx.enabled && debugx(' - session.store ~ MemoryStore (default)');
+          LX.has('silly') && LX.log('silly', LT.add({
+            sessionStoreType: 'memoryStore'
+          }).toMessage({
+            tags: [ crateID, 'session-store-set' ],
+            text: ' - session.store ~ ${sessionStoreType} (default)'
+          }));
       }
       sessionInstance = session(sessionOpts);
     }
@@ -298,25 +331,43 @@ var Service = function(params) {
     if (layer.enabled !== false) {
       if (layer.skipped !== true && lodash.isFunction(layer.middleware)) {
         if (layer.path) {
-          if (debugx.enabled) {
-            var p = lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path);
-            debugx.enabled && debugx(' - layer[%s] handles path: %s', footprint, p);
-          }
+          LX.has('silly') && LX.log('silly', LT.add({
+            footprint: footprint,
+            path: lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path)
+          }).toMessage({
+            tags: [ crateID, 'wire-layer', 'layer-path-on' ],
+            text: ' - layer[${footprint}] handles path: ${path}'
+          }));
           if (!(lodash.isArray(layer.path) && lodash.isEmpty(layer.path))) {
             slot.use(layer.path, layer.middleware);
           }
         } else {
-          debugx.enabled && debugx(' - layer[%s] handles any request', footprint);
+          LX.has('silly') && LX.log('silly', LT.add({
+            footprint: footprint
+          }).toMessage({
+            tags: [ crateID, 'wire-layer', 'layer-path-off' ],
+            text: ' - layer[${footprint}] handles any request'
+          }));
           slot.use(layer.middleware);
         }
       } else {
-        debugx.enabled && debugx(' - layer[%s] is skipped', footprint);
+        LX.has('silly') && LX.log('silly', LT.add({
+          footprint: footprint
+        }).toMessage({
+          tags: [ crateID, 'wire-layer', 'layer-skipped' ],
+          text: ' - layer[${footprint}] is skipped'
+        }));
       }
       if (lodash.isArray(layer.branches) && !lodash.isEmpty(layer.branches)) {
         slot.use(wireBranches(null, layer.branches, layer.trails));
       }
     } else {
-      debugx.enabled && debugx(' - layer[%s] is disabled', footprint);
+      LX.has('silly') && LX.log('silly', LT.add({
+        footprint: footprint
+      }).toMessage({
+        tags: [ crateID, 'wire-layer', 'layer-disabled' ],
+        text: ' - layer[${footprint}] is disabled'
+      }));
     }
     return slot;
   }
@@ -344,17 +395,28 @@ var Service = function(params) {
 
   self.push = function(layerOrBranches, priority) {
     if (bundleFreezed) {
-      debugx.enabled && debugx(' - inject(), but bundles has been freezed');
+      LX.has('silly') && LX.log('silly', LT.toMessage({
+        tags: [ crateID, 'inject', 'freezed' ],
+        text: ' - inject(), but bundles has been freezed'
+      }));
     } else {
       priority = lodash.isNumber(priority) ? priority : 0;
       bundles.push({ layerPack: layerOrBranches, priority: priority });
-      debugx.enabled && debugx(' - inject() layerweb is injected to #%s', priority);
+      LX.has('silly') && LX.log('silly', LT.add({
+        priority: priority
+      }).toMessage({
+        tags: [ crateID, 'inject', 'injected' ],
+        text: ' - inject() layerweb is injected to #${priority}'
+      }));
     }
   }
 
   self.combine = function() {
     if (bundleFreezed) {
-      debugx.enabled && debugx(' - combine(), but bundles has been freezed');
+      LX.has('silly') && LX.log('silly', LT.toMessage({
+        tags: [ crateID, 'combine', 'freezed' ],
+        text: ' - combine(), but bundles has been freezed'
+      }));
     } else {
       bundleFreezed = true;
       var sortedBundles = lodash.sortBy(bundles, function(bundle) {
@@ -363,7 +425,10 @@ var Service = function(params) {
       lodash.forEach(sortedBundles, function(bundle) {
         self.wire(apporo, bundle.layerPack);
       });
-      debugx.enabled && debugx(' - combine(): bundles has been combined');
+      LX.has('silly') && LX.log('silly', LT.toMessage({
+        tags: [ crateID, 'combine', 'combined' ],
+        text: ' - combine(): bundles has been combined'
+      }));
     }
   }
 

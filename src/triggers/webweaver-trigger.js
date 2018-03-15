@@ -20,10 +20,22 @@ var Service = function(params) {
   }));
 
   self.start = function() {
+    LX.has('silly') && LX.log('silly', LT.add({
+      crateID: crateID
+    }).toMessage({
+      tags: [ crateID, 'trigger-starting' ],
+      text: ' - trigger[${crateID}] is starting'
+    }));
     return Promise.resolve(params.webweaverService.combine());
   };
 
   self.stop = function() {
+    LX.has('silly') && LX.log('silly', LT.add({
+      crateID: crateID
+    }).toMessage({
+      tags: [ crateID, 'trigger-stopping' ],
+      text: ' - trigger[${crateID}] is stopping'
+    }));
     return Promise.resolve();
   };
 

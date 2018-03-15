@@ -14,6 +14,10 @@ module.exports = {
           expires: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
         }
       }
+    },
+    appWebserver: {
+      host: '0.0.0.0',
+      port: 18080
     }
   }
 };

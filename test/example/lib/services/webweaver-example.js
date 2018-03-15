@@ -4,19 +4,17 @@ var Devebot = require('devebot');
 var lodash = Devebot.require('lodash');
 var loader = Devebot.require('loader');
 var pinbug = Devebot.require('pinbug');
-var express = require('express');
 
 var Service = function(params) {
   var debugx = pinbug('app-webweaver:example');
   debugx.enabled && debugx(' + constructor begin ...');
 
   params = params || {};
-
   var self = this;
 
-  var logger = params.loggingFactory.getLogger();
-  var pluginCfg = params.sandboxConfig;
-  debugx.enabled && debugx('configuration: %s', JSON.stringify(pluginCfg));
+  var express = params.webweaverService.express;
+  var appConfig = params.sandboxConfig;
+  debugx.enabled && debugx('configuration: %s', JSON.stringify(appConfig));
 
   var getLayer1 = function(branches) {
     return {
@@ -56,7 +54,7 @@ var Service = function(params) {
     }
   }
 
-  if (pluginCfg.enabled !== false) {
+  if (appConfig.enabled !== false) {
     params.webweaverService.push([
       params.webweaverService.getDefaultRedirectLayer(),
       getLayer1([

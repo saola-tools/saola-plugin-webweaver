@@ -17,17 +17,18 @@ var Service = function(params) {
   params = params || {};
   var self = this;
 
-  var debugx = pinbug('app-webweaver:service');
-  var crateID = chores.getBlockRef(__filename, 'app-webweaver');
   var LX = params.loggingFactory.getLogger();
   var LT = params.loggingFactory.getTracer();
+  var packageName = params.packageName || 'app-webweaver';
+  var blockRef = chores.getBlockRef(__filename, packageName);
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-begin' ],
+    tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
   var pluginCfg = params.sandboxConfig;
+  var webserverTrigger = params["webserverTrigger"];
 
   var apporo = express();
 
@@ -36,10 +37,11 @@ var Service = function(params) {
     set: function(value) {}
   });
 
-  params.webserverTrigger.attach(apporo);
+  webserverTrigger.attach(apporo);
 
   //---------------------------------------------------------------------------
 
+  var debugx = pinbug('app-webweaver:service');
   var printRequestInfoInstance = function(req, res, next) {
     process.nextTick(function() {
       debugx.enabled && debugx('=@ webweaver receives a new request:');
@@ -76,7 +78,7 @@ var Service = function(params) {
           LX.has('silly') && LX.log('silly', LT.add({
             url: req.originalUrl
           }).toMessage({
-            tags: [ crateID, 'url-ssl-protection-layer', 'passed' ],
+            tags: [ blockRef, 'url-ssl-protection-layer', 'passed' ],
             text: ' - Passed Client: ${url}'
           }));
         } else {
@@ -84,7 +86,7 @@ var Service = function(params) {
           LX.has('silly') && LX.log('silly', LT.add({
             url: req.originalUrl
           }).toMessage({
-            tags: [ crateID, 'url-ssl-protection-layer', 'denied' ],
+            tags: [ blockRef, 'url-ssl-protection-layer', 'denied' ],
             text: ' - Denied Client: ${url}'
           }));
         }
@@ -133,7 +135,7 @@ var Service = function(params) {
             sessionStoreType: 'fileStore',
             urlOrPath: sessionStoreDef.path
           }).toMessage({
-            tags: [ crateID, 'session-store-set' ],
+            tags: [ blockRef, 'session-store-set' ],
             text: ' - session.store ~ ${sessionStoreType}'
           }));
           break;
@@ -145,7 +147,7 @@ var Service = function(params) {
             sessionStoreType: 'redisStore',
             urlOrPath: sessionStoreDef.url
           }).toMessage({
-            tags: [ crateID, 'session-store-set' ],
+            tags: [ blockRef, 'session-store-set' ],
             text: ' - session.store ~ ${sessionStoreType}'
           }));
           break;
@@ -157,7 +159,7 @@ var Service = function(params) {
             sessionStoreType: 'mongoStore',
             urlOrPath: sessionStoreDef.url
           }).toMessage({
-            tags: [ crateID, 'session-store-set' ],
+            tags: [ blockRef, 'session-store-set' ],
             text: ' - session.store ~ ${sessionStoreType}'
           }));
           break;
@@ -165,7 +167,7 @@ var Service = function(params) {
           LX.has('silly') && LX.log('silly', LT.add({
             sessionStoreType: 'memoryStore'
           }).toMessage({
-            tags: [ crateID, 'session-store-set' ],
+            tags: [ blockRef, 'session-store-set' ],
             text: ' - session.store ~ ${sessionStoreType} (default)'
           }));
       }
@@ -335,7 +337,7 @@ var Service = function(params) {
             footprint: footprint,
             path: lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path)
           }).toMessage({
-            tags: [ crateID, 'wire-layer', 'layer-path-on' ],
+            tags: [ blockRef, 'wire-layer', 'layer-path-on' ],
             text: ' - layer[${footprint}] handles path: ${path}'
           }));
           if (!(lodash.isArray(layer.path) && lodash.isEmpty(layer.path))) {
@@ -345,7 +347,7 @@ var Service = function(params) {
           LX.has('silly') && LX.log('silly', LT.add({
             footprint: footprint
           }).toMessage({
-            tags: [ crateID, 'wire-layer', 'layer-path-off' ],
+            tags: [ blockRef, 'wire-layer', 'layer-path-off' ],
             text: ' - layer[${footprint}] handles any request'
           }));
           slot.use(layer.middleware);
@@ -354,7 +356,7 @@ var Service = function(params) {
         LX.has('silly') && LX.log('silly', LT.add({
           footprint: footprint
         }).toMessage({
-          tags: [ crateID, 'wire-layer', 'layer-skipped' ],
+          tags: [ blockRef, 'wire-layer', 'layer-skipped' ],
           text: ' - layer[${footprint}] is skipped'
         }));
       }
@@ -365,7 +367,7 @@ var Service = function(params) {
       LX.has('silly') && LX.log('silly', LT.add({
         footprint: footprint
       }).toMessage({
-        tags: [ crateID, 'wire-layer', 'layer-disabled' ],
+        tags: [ blockRef, 'wire-layer', 'layer-disabled' ],
         text: ' - layer[${footprint}] is disabled'
       }));
     }
@@ -396,7 +398,7 @@ var Service = function(params) {
   self.push = function(layerOrBranches, priority) {
     if (bundleFreezed) {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'inject', 'freezed' ],
+        tags: [ blockRef, 'inject', 'freezed' ],
         text: ' - inject(), but bundles has been freezed'
       }));
     } else {
@@ -405,7 +407,7 @@ var Service = function(params) {
       LX.has('silly') && LX.log('silly', LT.add({
         priority: priority
       }).toMessage({
-        tags: [ crateID, 'inject', 'injected' ],
+        tags: [ blockRef, 'inject', 'injected' ],
         text: ' - inject() layerweb is injected to #${priority}'
       }));
     }
@@ -414,7 +416,7 @@ var Service = function(params) {
   self.combine = function() {
     if (bundleFreezed) {
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'combine', 'freezed' ],
+        tags: [ blockRef, 'combine', 'freezed' ],
         text: ' - combine(), but bundles has been freezed'
       }));
     } else {
@@ -426,7 +428,7 @@ var Service = function(params) {
         self.wire(apporo, bundle.layerPack);
       });
       LX.has('silly') && LX.log('silly', LT.toMessage({
-        tags: [ crateID, 'combine', 'combined' ],
+        tags: [ blockRef, 'combine', 'combined' ],
         text: ' - combine(): bundles has been combined'
       }));
     }
@@ -449,7 +451,7 @@ var Service = function(params) {
   });
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ crateID, 'constructor-end' ],
+    tags: [ blockRef, 'constructor-end' ],
     text: ' - constructor has finished'
   }));
 };

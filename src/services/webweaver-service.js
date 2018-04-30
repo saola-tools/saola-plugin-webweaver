@@ -1,36 +1,36 @@
 'use strict';
 
-var Devebot = require('devebot');
-var chores = Devebot.require('chores');
-var lodash = Devebot.require('lodash');
-var pinbug = Devebot.require('pinbug');
+const Devebot = require('devebot');
+const chores = Devebot.require('chores');
+const lodash = Devebot.require('lodash');
+const pinbug = Devebot.require('pinbug');
 
-var express = require('express');
-var session = require('express-session');
-var fileStore = require('session-file-store')(session);
-var mongoStore = require('connect-mongo')(session);
-var redisStore = require('connect-redis')(session);
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
+const express = require('express');
+const session = require('express-session');
+const fileStore = require('session-file-store')(session);
+const mongoStore = require('connect-mongo')(session);
+const redisStore = require('connect-redis')(session);
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
-var Service = function(params) {
+function WebweaverService(params) {
   params = params || {};
-  var self = this;
+  let self = this;
 
-  var LX = params.loggingFactory.getLogger();
-  var LT = params.loggingFactory.getTracer();
-  var packageName = params.packageName || 'app-webweaver';
-  var blockRef = chores.getBlockRef(__filename, packageName);
+  let LX = params.loggingFactory.getLogger();
+  let LT = params.loggingFactory.getTracer();
+  let packageName = params.packageName || 'app-webweaver';
+  let blockRef = chores.getBlockRef(__filename, packageName);
 
   LX.has('silly') && LX.log('silly', LT.toMessage({
     tags: [ blockRef, 'constructor-begin' ],
     text: ' + constructor start ...'
   }));
 
-  var pluginCfg = params.sandboxConfig;
-  var webserverTrigger = params["webserverTrigger"];
+  let pluginCfg = params.sandboxConfig;
+  let webserverTrigger = params["app-webserver/webserverTrigger"];
 
-  var apporo = express();
+  let apporo = express();
 
   Object.defineProperty(self, 'outlet', {
     get: function() { return apporo },
@@ -41,8 +41,9 @@ var Service = function(params) {
 
   //---------------------------------------------------------------------------
 
-  var debugx = pinbug('app-webweaver:service');
-  var printRequestInfoInstance = function(req, res, next) {
+  let debugx = null;
+  let printRequestInfoInstance = function(req, res, next) {
+    debugx = debugx || pinbug('app-webweaver:service');
     process.nextTick(function() {
       debugx.enabled && debugx('=@ webweaver receives a new request:');
       debugx.enabled && debugx(' - IP: %s / %s', req.ip, JSON.stringify(req.ips));
@@ -68,7 +69,7 @@ var Service = function(params) {
   }
 
   self.getUrlSslProtectionLayer = function(branches, sslProtectedUrls) {
-    var sslUrls = sslProtectedUrls || pluginCfg.sslProtectedUrls || [];
+    let sslUrls = sslProtectedUrls || pluginCfg.sslProtectedUrls || [];
     return {
       name: 'urlProtectionBySSL',
       path: sslUrls,
@@ -96,7 +97,7 @@ var Service = function(params) {
   }
 
   self.getCacheControlLayer = function(branches, path) {
-    var cacheControlConfig = lodash.get(pluginCfg, ['cacheControl'], {});
+    let cacheControlConfig = lodash.get(pluginCfg, ['cacheControl'], {});
     return {
       name: 'cacheControl',
       path: path,
@@ -111,21 +112,21 @@ var Service = function(params) {
     }
   }
 
-  var sessionId = lodash.get(pluginCfg, 'session.name', 'sessionId');
-  var sessionSecret = lodash.get(pluginCfg, 'session.secret', 's3cur3s3ss10n');
-  var sessionCookie = lodash.get(pluginCfg, 'session.cookie', null);
-  var sessionInstance = null;
+  let sessionId = lodash.get(pluginCfg, 'session.name', 'sessionId');
+  let sessionSecret = lodash.get(pluginCfg, 'session.secret', 's3cur3s3ss10n');
+  let sessionCookie = lodash.get(pluginCfg, 'session.cookie', null);
+  let sessionInstance = null;
 
   self.getSessionLayer = function(branches, path) {
     if (sessionInstance === null) {
-      var sessionOpts = {
+      let sessionOpts = {
         resave: true,
         saveUninitialized: true,
         name: sessionId,
         secret: sessionSecret,
         cookie: sessionCookie
       };
-      var sessionStoreDef = lodash.get(pluginCfg, ['session', 'store'], {});
+      let sessionStoreDef = lodash.get(pluginCfg, ['session', 'store'], {});
       switch(sessionStoreDef.type) {
         case 'file':
           sessionOpts.store = new fileStore({
@@ -181,7 +182,7 @@ var Service = function(params) {
     }
   }
 
-  var cookieParserInstance = null;
+  let cookieParserInstance = null;
 
   self.getCookieParserLayer = function(branches, path) {
     cookieParserInstance = cookieParserInstance || cookieParser(sessionSecret);
@@ -193,7 +194,7 @@ var Service = function(params) {
     }
   }
 
-  var jsonBodyParser = null;
+  let jsonBodyParser = null;
 
   self.getJsonBodyParserLayer = function(branches, path) {
     jsonBodyParser = jsonBodyParser || bodyParser.json({
@@ -207,7 +208,7 @@ var Service = function(params) {
     }
   }
 
-  var urlencodedBodyParser = null;
+  let urlencodedBodyParser = null;
 
   self.getUrlencodedBodyParserLayer = function(branches, path) {
     urlencodedBodyParser = urlencodedBodyParser || bodyParser.urlencoded({
@@ -221,7 +222,7 @@ var Service = function(params) {
     }
   }
 
-  var compressionInstance = null;
+  let compressionInstance = null;
 
   self.getCompressionLayer = function(branches, path) {
     compressionInstance = compressionInstance || require('compression')();
@@ -233,7 +234,7 @@ var Service = function(params) {
     }
   }
 
-  var csrfInstance = null;
+  let csrfInstance = null;
 
   self.getCsrfLayer = function(branches, path) {
     csrfInstance = csrfInstance || require('csurf')({ cookie: { signed: true } });
@@ -245,7 +246,7 @@ var Service = function(params) {
     }
   }
 
-  var helmetInstance = null;
+  let helmetInstance = null;
 
   self.getHelmetLayer = function(branches, path) {
     helmetInstance = helmetInstance || require('helmet')();
@@ -257,7 +258,7 @@ var Service = function(params) {
     }
   }
 
-  var methodOverrideInstance = null;
+  let methodOverrideInstance = null;
 
   self.getMethodOverrideLayer = function(branches, path) {
     methodOverrideInstance = methodOverrideInstance || require('method-override')();
@@ -270,7 +271,7 @@ var Service = function(params) {
   }
 
   self.getChangePowerByLayer = function(branches, path) {
-    var middleware = null;
+    let middleware = null;
     if (pluginCfg.setPoweredBy) {
       middleware = function setPoweredBy(req, res, next) {
         res.setHeader('X-Powered-By', pluginCfg.setPoweredBy);
@@ -291,7 +292,7 @@ var Service = function(params) {
   }
 
   self.getDefaultRedirectLayer = function(path) {
-    var layer = {
+    let layer = {
       skipped: true,
       name: 'defaultRedirect',
       path: path || ['/$'],
@@ -323,13 +324,13 @@ var Service = function(params) {
 
   //---------------------------------------------------------------------------
 
-  var wireLayer = function(slot, layer, superTrail) {
+  let wireLayer = function(slot, layer, superTrail) {
     slot = slot || express();
     superTrail = superTrail || [];
     if (layer === null) return slot;
     layer.trails = superTrail.slice(0);
     layer.trails.push(layer.name);
-    var footprint = layer.trails.join('>');
+    let footprint = layer.trails.join('>');
     if (layer.enabled !== false) {
       if (layer.skipped !== true && lodash.isFunction(layer.middleware)) {
         if (layer.path) {
@@ -374,7 +375,7 @@ var Service = function(params) {
     return slot;
   }
 
-  var wireBranches = function(slot, layers, superTrail) {
+  let wireBranches = function(slot, layers, superTrail) {
     slot = slot || express();
     lodash.forEach(layers, function(layer) {
       wireLayer(slot, layer, superTrail);
@@ -392,8 +393,8 @@ var Service = function(params) {
 
   //---------------------------------------------------------------------------
 
-  var bundles = [];
-  var bundleFreezed = false;
+  let bundles = [];
+  let bundleFreezed = false;
 
   self.push = function(layerOrBranches, priority) {
     if (bundleFreezed) {
@@ -421,7 +422,7 @@ var Service = function(params) {
       }));
     } else {
       bundleFreezed = true;
-      var sortedBundles = lodash.sortBy(bundles, function(bundle) {
+      let sortedBundles = lodash.sortBy(bundles, function(bundle) {
         return bundle.priority;
       });
       lodash.forEach(sortedBundles, function(bundle) {
@@ -456,6 +457,6 @@ var Service = function(params) {
   }));
 };
 
-Service.referenceList = [ "webserverTrigger" ];
+WebweaverService.referenceList = [ "app-webserver/webserverTrigger" ];
 
-module.exports = Service;
+module.exports = WebweaverService;

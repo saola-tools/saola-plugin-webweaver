@@ -4,6 +4,7 @@ var Devebot = require('devebot');
 var lodash = Devebot.require('lodash');
 var loader = Devebot.require('loader');
 var pinbug = Devebot.require('pinbug');
+var util = require('util');
 
 var Service = function(params) {
   var debugx = pinbug('app-webweaver:example');
@@ -47,6 +48,9 @@ var Service = function(params) {
           res.status(200).json({
             message: 'example [' + req.params.id + '] request successfully'
           });
+        });
+        app2.get('/error/:anything', function(req, res) {
+          throw new Error(util.format('Something error [%s]', req.params.anything));
         });
         return app2;
       })(),

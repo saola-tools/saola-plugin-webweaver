@@ -5,6 +5,15 @@ module.exports = {
   plugins: {
     appWebweaver: {
       defaultRedirectUrl: '/example/dashboard',
+      errorHandler: {
+        mappings: [
+          {
+            errorName: 'Error',
+            statusCode: 402,
+            statusMessage: 'Invalid credentials'
+          }
+        ]
+      },
       session: {
         cookie: {
           secure: true,

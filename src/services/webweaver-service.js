@@ -22,12 +22,7 @@ function WebweaverService(params) {
   let packageName = params.packageName || 'app-webweaver';
   let blockRef = chores.getBlockRef(__filename, packageName);
 
-  LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ blockRef, 'constructor-begin' ],
-    text: ' + constructor start ...'
-  }));
-
-  let pluginCfg = params.sandboxConfig;
+  let pluginCfg = params.sandboxConfig || {};
   let webserverTrigger = params["app-webserver/webserverTrigger"];
 
   let apporo = express();
@@ -428,6 +423,7 @@ function WebweaverService(params) {
       lodash.forEach(sortedBundles, function(bundle) {
         self.wire(apporo, bundle.layerPack);
       });
+      applyErrorHandler(apporo);
       LX.has('silly') && LX.log('silly', LT.toMessage({
         tags: [ blockRef, 'combine', 'combined' ],
         text: ' - combine(): bundles has been combined'
@@ -437,6 +433,89 @@ function WebweaverService(params) {
 
   // Deprecated
   self.inject = self.push;
+
+  //---------------------------------------------------------------------------
+
+  let errorHandlerCfg = pluginCfg.errorHandler || {};
+  let errorMap = {};
+
+  lodash.forEach(errorHandlerCfg.mappings, function(mapping) {
+    let errorName = mapping.errorName;
+    if (mapping.errorCode) {
+      let errorFullName = mapping.errorName + '_' + mapping.errorCode;
+      errorMap[errorFullName] = {
+        statusCode: mapping.statusCode,
+        statusMessage: mapping.statusMessage
+      }
+    } else {
+      errorMap[errorName] = {
+        statusCode: mapping.statusCode,
+        statusMessage: mapping.statusMessage
+      }
+    }
+    errorMap[errorName] = errorMap[errorName] || {
+      statusCode: mapping.statusCode,
+      statusMessage: mapping.statusMessage
+    }
+  });
+
+  let getErrorMappingId = function(error) {
+    let mappingId = null;
+    if (error && typeof error.name === 'string') {
+      mappingId = error.name;
+      if (mappingId && error.code) {
+        mappingId = mappingId + '_' + error.code;
+      }
+    }
+    return mappingId;
+  }
+
+  let transformError = function(error) {
+    let mappingId = getErrorMappingId(error);
+    if (mappingId && errorMap[mappingId]) {
+      let output = lodash.cloneDeep(errorMap[mappingId]);
+      if (error.message) {
+        output.statusMessage = error.message;
+      }
+      if (error.payload && !lodash.isEmpty(error.payload)) {
+        output.statusBody = error.payload;
+      }
+      return output;
+    }
+    return { statusCode: 500, statusMessage: 'Unknown Error' }
+  }
+
+  let applyErrorHandler = function(slot) {
+    slot.use(function (err, req, res, next) {
+      if (res.headersSent) {
+        return next(err);
+      }
+      let output = transformError(err);
+      res.statusMessage = output.statusMessage;
+      res.status(output.statusCode);
+      if (output.statusBody) {
+        if (lodash.isString(output.statusBody)) {
+          res.send(output.statusBody);
+        } else {
+          res.json(output.statusBody);
+        }
+      } else {
+        res.send();
+      }
+    });
+  }
+
+  let stringify = function(data) {
+    if (data === undefined) data = null;
+    if (typeof(data) === 'string') return data;
+    var json = null;
+    try {
+      json = JSON.stringify(data);
+    } catch (error) {
+      json = JSON.stringify({ message: 'JSON.stringify() error' });
+    }
+    return json;
+  }
 
   //---------------------------------------------------------------------------
 
@@ -450,11 +529,6 @@ function WebweaverService(params) {
       set: function(value) {}
     }
   });
-
-  LX.has('silly') && LX.log('silly', LT.toMessage({
-    tags: [ blockRef, 'constructor-end' ],
-    text: ' - constructor has finished'
-  }));
 };
 
 WebweaverService.referenceList = [ "app-webserver/webserverTrigger" ];

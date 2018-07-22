@@ -1,6 +1,7 @@
 'use strict';
 
 var Devebot = require('devebot');
+var chores = Devebot.require('chores');
 var lodash = Devebot.require('lodash');
 var loader = Devebot.require('loader');
 var pinbug = Devebot.require('pinbug');
@@ -39,6 +40,17 @@ var Service = function(params) {
     }
   }
 
+  var sampleOfErrors = {
+    'simple-error': {
+      constructor: Error,
+      message: 'very simple error'
+    },
+    'error-without-code': {
+      constructor: chores.buildError('NoCodeError'),
+      message: 'error without code'
+    }
+  };
+
   var getLayer2 = function(branches) {
     return {
       name: 'app2',
@@ -49,8 +61,18 @@ var Service = function(params) {
             message: 'example [' + req.params.id + '] request successfully'
           });
         });
-        app2.get('/error/:anything', function(req, res) {
-          throw new Error(util.format('Something error [%s]', req.params.anything));
+        app2.get('/error', function(req, res) {
+          res.status(200).json({
+            entrypoints: lodash.keys(sampleOfErrors)
+          });
+        });
+        app2.get('/error/:sampleId', function(req, res) {
+          var sampleId = req.params.sampleId;
+          if (sampleOfErrors[sampleId]) {
+            var def = sampleOfErrors[sampleId];
+            throw new def.constructor(util.format('Status Message [%s]', def.message));
+          }
+          throw new Error(util.format('Status Message - Unknown sample [%s]', sampleId));
         });
         return app2;
       })(),

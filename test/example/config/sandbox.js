@@ -11,6 +11,11 @@ module.exports = {
             errorName: 'Error',
             statusCode: 402,
             statusMessage: 'Invalid credentials'
+          },
+          {
+            errorName: 'NoCodeError',
+            statusCode: 405,
+            statusMessage: 'NoCodeError default message'
           }
         ]
       },

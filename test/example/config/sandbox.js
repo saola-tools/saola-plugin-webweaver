@@ -9,13 +9,17 @@ module.exports = {
         mappings: [
           {
             errorName: 'Error',
-            statusCode: 402,
-            statusMessage: 'Invalid credentials'
+            default: {
+              statusCode: 402,
+              statusMessage: 'Invalid credentials'
+            }
           },
           {
             errorName: 'NoCodeError',
-            statusCode: 405,
-            statusMessage: 'NoCodeError default message'
+            default: {
+              statusCode: 405,
+              statusMessage: 'NoCodeError default message'
+            }
           }
         ]
       },

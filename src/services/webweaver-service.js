@@ -440,23 +440,15 @@ function WebweaverService(params) {
   let errorMap = {};
 
   lodash.forEach(errorHandlerCfg.mappings, function(mapping) {
+    let mappingRule = lodash.pick(mapping, ['default', 'transform']);
     let errorName = mapping.errorName;
     if (mapping.errorCode) {
       let errorFullName = mapping.errorName + '_' + mapping.errorCode;
-      errorMap[errorFullName] = {
-        statusCode: mapping.statusCode,
-        statusMessage: mapping.statusMessage
-      }
+      errorMap[errorFullName] = mappingRule;
     } else {
-      errorMap[errorName] = {
-        statusCode: mapping.statusCode,
-        statusMessage: mapping.statusMessage
-      }
+      errorMap[errorName] = mappingRule;
     }
-    errorMap[errorName] = errorMap[errorName] || {
-      statusCode: mapping.statusCode,
-      statusMessage: mapping.statusMessage
-    }
+    errorMap[errorName] = errorMap[errorName] || mappingRule;
   });
 
   let getErrorMappingId = function(error) {
@@ -473,16 +465,49 @@ function WebweaverService(params) {
   let transformError = function(error) {
     let mappingId = getErrorMappingId(error);
     if (mappingId && errorMap[mappingId]) {
-      let output = lodash.cloneDeep(errorMap[mappingId]);
-      if (error.message) {
+      const mapping = errorMap[mappingId];
+      let output = {};
+      // apply transforming methods
+      if (mapping.transform && lodash.isFunction(mapping.transform.statusCode)) {
+        output.statusCode = mapping.transform.statusCode(error);
+      }
+      if (mapping.transform && lodash.isFunction(mapping.transform.statusMessage)) {
+        output.statusMessage = mapping.transform.statusMessage(error);
+      }
+      if (mapping.transform && lodash.isFunction(mapping.transform.responseBody)) {
+        output.responseBody = mapping.transform.responseBody(error);
+      }
+      // apply error properties
+      if (!lodash.isString(output.statusMessage)) {
         output.statusMessage = error.message;
       }
-      if (error.payload && !lodash.isEmpty(error.payload)) {
-        output.statusBody = error.payload;
+      if (lodash.isEmpty(output.responseBody)) {
+        output.responseBody = error.payload;
       }
+      // apply mapping.default for undefined fields
+      if (!lodash.isNumber(output.statusCode)) {
+        output.statusCode = mapping.default && mapping.default.statusCode;
+      }
+      if (!lodash.isString(output.statusMessage)) {
+        output.statusMessage = mapping.default && mapping.default.statusMessage;
+      }
+      if (lodash.isEmpty(output.responseBody)) {
+        output.responseBody = mapping.default && mapping.default.responseBody;
+      }
+      // apply default statusCode
+      output.statusCode = output.statusCode || 500;
       return output;
     }
-    return { statusCode: 500, statusMessage: 'Unknown Error' }
+    return {
+      statusCode: 500,
+      statusMessage: 'Unknown Error',
+      responseBody: {
+        type: typeof(error),
+        name: error && error.name,
+        code: error && error.code,
+        message: error && error.message
+      }
+    }
   }
 
   let applyErrorHandler = function(slot) {
@@ -493,11 +518,11 @@ function WebweaverService(params) {
       let output = transformError(err);
       res.statusMessage = output.statusMessage;
       res.status(output.statusCode);
-      if (output.statusBody) {
-        if (lodash.isString(output.statusBody)) {
-          res.send(output.statusBody);
+      if (output.responseBody) {
+        if (lodash.isString(output.responseBody)) {
+          res.send(output.responseBody);
         } else {
-          res.json(output.statusBody);
+          res.json(output.responseBody);
         }
       } else {
         res.send();

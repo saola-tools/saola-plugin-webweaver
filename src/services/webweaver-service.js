@@ -12,6 +12,7 @@ const mongoStore = require('connect-mongo')(session);
 const redisStore = require('connect-redis')(session);
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 function WebweaverService(params) {
   params = params || {};
@@ -26,6 +27,11 @@ function WebweaverService(params) {
   let webserverTrigger = params["app-webserver/webserverTrigger"];
 
   let apporo = express();
+
+  let corsCfg = lodash.get(pluginCfg, "cors", {});
+  if (corsCfg.enabled === true && corsCfg.mode === 'simple') {
+    apporo.use(cors());
+  }
 
   Object.defineProperty(self, 'outlet', {
     get: function() { return apporo },

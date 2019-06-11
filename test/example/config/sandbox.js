@@ -5,6 +5,10 @@ module.exports = {
   plugins: {
     appWebweaver: {
       defaultRedirectUrl: '/example/dashboard',
+      cors: {
+        enabled: true,
+        mode: 'simple'
+      },
       errorHandler: {
         mappings: [
           {

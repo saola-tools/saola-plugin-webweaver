@@ -1,6 +1,6 @@
 {
   "name": "app-webweaver",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Devebot express-based webweaver layerware",
   "homepage": "https://github.com/apporo/app-webweaver.git",
   "author": {
@@ -38,23 +38,23 @@
     "app-webserver": "^0.3.0",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
-    "connect-mongo": "^2.0.0",
-    "connect-redis": "^3.3.2",
+    "connect-mongo": "^3.2.0",
+    "connect-redis": "^5.2.0",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "csurf": "^1.9.0",
     "devebot": "^0.3.0",
-    "ejs": "^2.5.7",
+    "ejs": "^3.1.8",
     "express": "^4.16.2",
-    "express-session": "^1.15.6",
+    "express-session": "^1.17.2",
     "helmet": "^3.9.0",
     "method-override": "^2.3.10",
     "session-file-store": "^1.1.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-plugin-minify-mangle-names": "^0.3.0",
-    "babel-preset-env": "^1.6.1",
-    "cucumber": "^4.0.0"
+    "@babel/cli": "^7.19.3",
+    "@babel/core": "^7.20.2",
+    "@babel/preset-env": "^7.20.2",
+    "babel-plugin-minify-mangle-names": "^0.5.1"
   }
 }

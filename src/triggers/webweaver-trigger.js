@@ -2,7 +2,6 @@
 
 const Devebot = require('devebot');
 const chores = Devebot.require('chores');
-const lodash = Devebot.require('lodash');
 
 function WebweaverTrigger(params) {
   params = params || {};

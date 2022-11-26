@@ -84,7 +84,7 @@ function WebweaverService(params) {
             text: ' - Passed Client: ${url}'
           }));
         } else {
-          res.json({"status":"Access denied"}, 401);
+          res.json({"status": "Access denied"}, 401);
           LX.has('silly') && LX.log('silly', LT.add({
             url: req.originalUrl
           }).toMessage({
@@ -128,7 +128,7 @@ function WebweaverService(params) {
         cookie: sessionCookie
       };
       let sessionStoreDef = lodash.get(pluginCfg, ['session', 'store'], {});
-      switch(sessionStoreDef.type) {
+      switch (sessionStoreDef.type) {
         case 'file':
           sessionOpts.store = new fileStore({
             path: sessionStoreDef.path

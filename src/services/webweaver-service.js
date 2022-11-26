@@ -199,7 +199,8 @@ function WebweaverService(params) {
 
   self.getJsonBodyParserLayer = function(branches, path) {
     jsonBodyParser = jsonBodyParser || bodyParser.json({
-      limit: pluginCfg.jsonBodySizeLimit || '2mb'
+      limit: pluginCfg.jsonBodySizeLimit || '2mb',
+      extended: true
     });
     return {
       name: 'bodyParser.json',
@@ -213,6 +214,7 @@ function WebweaverService(params) {
 
   self.getUrlencodedBodyParserLayer = function(branches, path) {
     urlencodedBodyParser = urlencodedBodyParser || bodyParser.urlencoded({
+      limit: pluginCfg.urlencodedBodySizeLimit || undefined,
       extended: true
     });
     return {

@@ -6,12 +6,9 @@ module.exports = {
         name: 'sessionId',
         secret: 'd0bi3td4y',
         cookie: {},
-        store: {
-          type: 'redis',
-          url: 'redis://localhost:6379'
-        }
+        store: {},
       },
-      jsonBodySizeLimit: '1mb',
+      jsonBodySizeLimit: '2mb',
       cacheControl: {
         enabled: false,
         pattern: {

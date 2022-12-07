@@ -538,18 +538,6 @@ function WebweaverService(params) {
     });
   }
 
-  let stringify = function(data) {
-    if (data === undefined) data = null;
-    if (typeof(data) === 'string') return data;
-    var json = null;
-    try {
-      json = JSON.stringify(data);
-    } catch (error) {
-      json = JSON.stringify({ message: 'JSON.stringify() error' });
-    }
-    return json;
-  }
-
   //---------------------------------------------------------------------------
 
   Object.defineProperties(self, {

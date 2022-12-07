@@ -1,14 +1,14 @@
 'use strict';
 
-var app = require('../app');
-var Devebot = require('devebot');
-var Promise = Devebot.require('bluebird');
-var lodash = Devebot.require('lodash');
-var debug = Devebot.require('debug');
-var assert = require('chai').assert;
-var expect = require('chai').expect;
-var util = require('util');
-var debugx = debug('appWeaver:test:bdd:middleware');
+const app = require('../app');
+const Devebot = require('devebot');
+const Promise = Devebot.require('bluebird');
+const lodash = Devebot.require('lodash');
+const debug = Devebot.require('debug');
+const assert = require('chai').assert;
+const expect = require('chai').expect;
+const util = require('util');
+const debugx = debug('appWeaver:test:bdd:middleware');
 
 describe('appWeaver:test:bdd:middleware:', function() {
 	describe('start/stop app engine-service', function() {

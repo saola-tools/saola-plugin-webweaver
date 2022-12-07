@@ -46,7 +46,7 @@ var Service = function(params) {
       message: 'very simple error'
     },
     'error-without-code': {
-      constructor: chores.buildError('NoCodeError'),
+      constructor: Error, //chores.buildError('NoCodeError'),
       message: 'error without code'
     }
   };

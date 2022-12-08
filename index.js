@@ -1,8 +1,8 @@
 'use strict';
 
-var plugin = require('devebot').registerLayerware(__dirname, ['app-webserver']);
+const plugin = require('devebot').registerLayerware(__dirname, ['app-webserver']);
 
-var builtinPackages = [
+const builtinPackages = [
 	'express',
 	'express-session',
 	'cookie-parser',

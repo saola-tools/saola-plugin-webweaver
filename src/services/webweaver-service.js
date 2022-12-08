@@ -16,19 +16,19 @@ const cors = require('cors');
 
 function WebweaverService(params) {
   params = params || {};
-  let self = this;
+  const self = this;
 
-  let LX = params.loggingFactory.getLogger();
-  let LT = params.loggingFactory.getTracer();
-  let packageName = params.packageName || 'app-webweaver';
-  let blockRef = chores.getBlockRef(__filename, packageName);
+  const LX = params.loggingFactory.getLogger();
+  const LT = params.loggingFactory.getTracer();
+  const packageName = params.packageName || 'app-webweaver';
+  const blockRef = chores.getBlockRef(__filename, packageName);
 
-  let pluginCfg = params.sandboxConfig || {};
-  let webserverTrigger = params["app-webserver/webserverTrigger"];
+  const pluginCfg = params.sandboxConfig || {};
+  const webserverTrigger = params["app-webserver/webserverTrigger"];
 
-  let apporo = express();
+  const apporo = express();
 
-  let corsCfg = lodash.get(pluginCfg, "cors", {});
+  const corsCfg = lodash.get(pluginCfg, "cors", {});
   if (corsCfg.enabled === true && corsCfg.mode === 'simple') {
     apporo.use(cors());
   }
@@ -327,13 +327,6 @@ function WebweaverService(params) {
 
   //---------------------------------------------------------------------------
 
-  self.wire = function(slot, layerOrBranches, superTrail) {
-    const context = { LX, LT, blockRef, express };
-    return wire(context, slot, layerOrBranches, superTrail);
-  }
-
-  //---------------------------------------------------------------------------
-
   let bundles = [];
   let bundleFreezed = false;
 
@@ -378,6 +371,11 @@ function WebweaverService(params) {
         text: ' - combine(): bundles has been combined'
       }));
     }
+  }
+
+  self.wire = function(slot, layerOrBranches, superTrail) {
+    const context = { LX, LT, blockRef, express };
+    return wire(context, slot, layerOrBranches, superTrail);
   }
 
   // Deprecated
@@ -499,7 +497,7 @@ function createRouter (context) {
   return express();
 }
 
-let applyErrorHandler = function(context, slot) {
+function applyErrorHandler (context, slot) {
   slot.use(function (err, req, res, next) {
     if (res.headersSent) {
       return next(err);
@@ -519,7 +517,7 @@ let applyErrorHandler = function(context, slot) {
   });
 }
 
-let transformError = function(context, error) {
+function transformError (context, error) {
   const { errorMap } = context || {};
   let mappingId = getErrorMappingId(error);
   if (mappingId && errorMap[mappingId]) {
@@ -568,7 +566,7 @@ let transformError = function(context, error) {
   }
 }
 
-let getErrorMappingId = function(error) {
+function getErrorMappingId (error) {
   let mappingId = null;
   if (error && typeof error.name === 'string') {
     mappingId = error.name;

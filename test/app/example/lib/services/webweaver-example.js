@@ -1,24 +1,21 @@
 'use strict';
 
-var Devebot = require('devebot');
-var chores = Devebot.require('chores');
-var lodash = Devebot.require('lodash');
-var loader = Devebot.require('loader');
-var pinbug = Devebot.require('pinbug');
-var util = require('util');
+const Devebot = require('devebot');
+const chores = Devebot.require('chores');
+const lodash = Devebot.require('lodash');
+const pinbug = Devebot.require('pinbug');
+const util = require('util');
 
-var Service = function(params) {
-  var debugx = pinbug('app-webweaver:example');
+function Service (params) {
+  const debugx = pinbug('app-webweaver:example');
   debugx.enabled && debugx(' + constructor begin ...');
 
   params = params || {};
-  var self = this;
-
-  var express = params.webweaverService.express;
-  var appConfig = params.sandboxConfig;
+  const express = params.webweaverService.express;
+  const appConfig = params.sandboxConfig;
   debugx.enabled && debugx('configuration: %s', JSON.stringify(appConfig));
 
-  var getLayer1 = function(branches) {
+  const getLayer1 = function(branches) {
     return {
       name: 'app1',
       path: ['*'],
@@ -40,7 +37,7 @@ var Service = function(params) {
     }
   }
 
-  var sampleOfErrors = {
+  const sampleOfErrors = {
     'simple-error': {
       constructor: Error,
       message: 'very simple error'
@@ -51,11 +48,11 @@ var Service = function(params) {
     }
   };
 
-  var getLayer2 = function(branches) {
+  const getLayer2 = function(branches) {
     return {
       name: 'app2',
       middleware: (function() {
-        var app2 = express();
+        const app2 = express();
         app2.get('/example/:id', function(req, res) {
           res.status(200).json({
             message: 'example [' + req.params.id + '] request successfully'
@@ -67,9 +64,9 @@ var Service = function(params) {
           });
         });
         app2.get('/error/:sampleId', function(req, res) {
-          var sampleId = req.params.sampleId;
+          const sampleId = req.params.sampleId;
           if (sampleOfErrors[sampleId]) {
-            var def = sampleOfErrors[sampleId];
+            const def = sampleOfErrors[sampleId];
             throw new def.constructor(util.format('Status Message [%s]', def.message));
           }
           throw new Error(util.format('Status Message - Unknown sample [%s]', sampleId));

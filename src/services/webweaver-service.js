@@ -410,7 +410,7 @@ function WebweaverService(params) {
       set: function(value) {}
     }
   });
-};
+}
 
 WebweaverService.referenceHash = {
   webserverTrigger: 'app-webserver/webserverTrigger'

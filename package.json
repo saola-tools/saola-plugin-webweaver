@@ -19,13 +19,15 @@
     "lib/"
   ],
   "scripts": {
-    "build": "babel ./src -d ./lib",
+    "bootstrap": "npm install && cd test && npm install",
+    "clean-modules": "rm -rf ./node_modules && rm ./package-lock.json",
+    "build": "npm exec -- babel ./src -d ./lib",
     "clean": "rm -rf ./lib",
-    "prepublish": "npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-production} npm run build",
-    "pretest": "npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-test} npm run build",
-    "test": "cucumber-js ./test/**/*.feature",
-    "verify": "npm run prepublish && cucumber-js ./test/**/*.feature",
-    "eslint": "eslint ./src/ --quiet"
+    "prepublish": "npm run clean && cross-env NODE_ENV=${DEVEBOT_NODE_ENV:-production} npm run build",
+    "pretest": "npm run clean && cross-env NODE_ENV=${DEVEBOT_NODE_ENV:-test} npm run build",
+    "test": "cd test && npm exec -- mocha --recursive ./**/*-test.js",
+    "verify": "npm run prepublish && npm run test",
+    "eslint": "npm exec -- eslint ./src/  --quiet"
   },
   "keywords": [
     "devebot",

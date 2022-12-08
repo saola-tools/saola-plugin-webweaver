@@ -327,7 +327,8 @@ function WebweaverService(params) {
 
   //---------------------------------------------------------------------------
 
-  let wireLayer = function(slot, layer, superTrail) {
+  let wireLayer = function(context, slot, layer, superTrail) {
+    const { LX, LT, blockRef, express } = context || {};
     slot = slot || express();
     superTrail = superTrail || [];
     if (layer === null) return slot;
@@ -365,7 +366,7 @@ function WebweaverService(params) {
         }));
       }
       if (lodash.isArray(layer.branches) && !lodash.isEmpty(layer.branches)) {
-        slot.use(wireBranches(null, layer.branches, layer.trails));
+        slot.use(wireBranches(context, null, layer.branches, layer.trails));
       }
     } else {
       LX.has('silly') && LX.log('silly', LT.add({
@@ -378,19 +379,21 @@ function WebweaverService(params) {
     return slot;
   }
 
-  let wireBranches = function(slot, layers, superTrail) {
+  let wireBranches = function(context, slot, layers, superTrail) {
+    const { express } = context || {};
     slot = slot || express();
     lodash.forEach(layers, function(layer) {
-      wireLayer(slot, layer, superTrail);
+      wireLayer(context, slot, layer, superTrail);
     });
     return slot;
   }
 
   self.wire = function(slot, layerOrBranches, superTrail) {
+    const context = { LX, LT, blockRef, express };
     if (lodash.isArray(layerOrBranches)) {
-      return wireBranches(slot, layerOrBranches, superTrail);
+      return wireBranches(context, slot, layerOrBranches, superTrail);
     } else {
-      return wireLayer(slot, layerOrBranches, superTrail);
+      return wireLayer(context, slot, layerOrBranches, superTrail);
     }
   }
 
@@ -552,6 +555,8 @@ function WebweaverService(params) {
   });
 };
 
-WebweaverService.referenceList = [ "app-webserver/webserverTrigger" ];
+WebweaverService.referenceHash = {
+  webserverTrigger: 'app-webserver/webserverTrigger'
+};
 
 module.exports = WebweaverService;

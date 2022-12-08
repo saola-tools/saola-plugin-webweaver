@@ -327,74 +327,9 @@ function WebweaverService(params) {
 
   //---------------------------------------------------------------------------
 
-  let wireLayer = function(context, slot, layer, superTrail) {
-    const { LX, LT, blockRef, express } = context || {};
-    slot = slot || express();
-    superTrail = superTrail || [];
-    if (layer === null) return slot;
-    layer.trails = superTrail.slice(0);
-    layer.trails.push(layer.name);
-    let footprint = layer.trails.join('>');
-    if (layer.enabled !== false) {
-      if (layer.skipped !== true && lodash.isFunction(layer.middleware)) {
-        if (layer.path) {
-          LX.has('silly') && LX.log('silly', LT.add({
-            footprint: footprint,
-            path: lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path)
-          }).toMessage({
-            tags: [ blockRef, 'wire-layer', 'layer-path-on' ],
-            text: ' - layer[${footprint}] handles path: ${path}'
-          }));
-          if (!(lodash.isArray(layer.path) && lodash.isEmpty(layer.path))) {
-            slot.use(layer.path, layer.middleware);
-          }
-        } else {
-          LX.has('silly') && LX.log('silly', LT.add({
-            footprint: footprint
-          }).toMessage({
-            tags: [ blockRef, 'wire-layer', 'layer-path-off' ],
-            text: ' - layer[${footprint}] handles any request'
-          }));
-          slot.use(layer.middleware);
-        }
-      } else {
-        LX.has('silly') && LX.log('silly', LT.add({
-          footprint: footprint
-        }).toMessage({
-          tags: [ blockRef, 'wire-layer', 'layer-skipped' ],
-          text: ' - layer[${footprint}] is skipped'
-        }));
-      }
-      if (lodash.isArray(layer.branches) && !lodash.isEmpty(layer.branches)) {
-        slot.use(wireBranches(context, null, layer.branches, layer.trails));
-      }
-    } else {
-      LX.has('silly') && LX.log('silly', LT.add({
-        footprint: footprint
-      }).toMessage({
-        tags: [ blockRef, 'wire-layer', 'layer-disabled' ],
-        text: ' - layer[${footprint}] is disabled'
-      }));
-    }
-    return slot;
-  }
-
-  let wireBranches = function(context, slot, layers, superTrail) {
-    const { express } = context || {};
-    slot = slot || express();
-    lodash.forEach(layers, function(layer) {
-      wireLayer(context, slot, layer, superTrail);
-    });
-    return slot;
-  }
-
   self.wire = function(slot, layerOrBranches, superTrail) {
     const context = { LX, LT, blockRef, express };
-    if (lodash.isArray(layerOrBranches)) {
-      return wireBranches(context, slot, layerOrBranches, superTrail);
-    } else {
-      return wireLayer(context, slot, layerOrBranches, superTrail);
-    }
+    return wire(context, slot, layerOrBranches, superTrail);
   }
 
   //---------------------------------------------------------------------------
@@ -560,3 +495,82 @@ WebweaverService.referenceHash = {
 };
 
 module.exports = WebweaverService;
+
+function wire (context, slot, layerOrBranches, superTrail) {
+  if (lodash.isArray(layerOrBranches)) {
+    return wireBranches(context, slot, layerOrBranches, superTrail);
+  } else {
+    return wireLayer(context, slot, layerOrBranches, superTrail);
+  }
+}
+
+function wireLayer (context, slot, layer, superTrail) {
+  const { LX, LT, blockRef } = context || {};
+  //
+  slot = slot || createRouter(context);
+  superTrail = superTrail || [];
+  //
+  if (layer === null) return slot;
+  //
+  layer.trails = superTrail.slice(0);
+  layer.trails.push(layer.name);
+  //
+  let footprint = layer.trails.join('>');
+  //
+  if (layer.enabled !== false) {
+    if (layer.skipped !== true && lodash.isFunction(layer.middleware)) {
+      if (layer.path) {
+        LX.has('silly') && LX.log('silly', LT.add({
+          footprint: footprint,
+          path: lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path)
+        }).toMessage({
+          tags: [ blockRef, 'wire-layer', 'layer-path-on' ],
+          text: ' - layer[${footprint}] handles path: ${path}'
+        }));
+        if (!(lodash.isArray(layer.path) && lodash.isEmpty(layer.path))) {
+          slot.use(layer.path, layer.middleware);
+        }
+      } else {
+        LX.has('silly') && LX.log('silly', LT.add({
+          footprint: footprint
+        }).toMessage({
+          tags: [ blockRef, 'wire-layer', 'layer-path-off' ],
+          text: ' - layer[${footprint}] handles any request'
+        }));
+        slot.use(layer.middleware);
+      }
+    } else {
+      LX.has('silly') && LX.log('silly', LT.add({
+        footprint: footprint
+      }).toMessage({
+        tags: [ blockRef, 'wire-layer', 'layer-skipped' ],
+        text: ' - layer[${footprint}] is skipped'
+      }));
+    }
+    if (lodash.isArray(layer.branches) && !lodash.isEmpty(layer.branches)) {
+      slot.use(wireBranches(context, null, layer.branches, layer.trails));
+    }
+  } else {
+    LX.has('silly') && LX.log('silly', LT.add({
+      footprint: footprint
+    }).toMessage({
+      tags: [ blockRef, 'wire-layer', 'layer-disabled' ],
+      text: ' - layer[${footprint}] is disabled'
+    }));
+  }
+  //
+  return slot;
+}
+
+function wireBranches (context, slot, layers, superTrail) {
+  slot = slot || createRouter(context);
+  lodash.forEach(layers, function(layer) {
+    wireLayer(context, slot, layer, superTrail);
+  });
+  return slot;
+}
+
+function createRouter (context) {
+  const { express } = context || {};
+  return express();
+}

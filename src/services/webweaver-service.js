@@ -366,10 +366,13 @@ function WebweaverService(params) {
       let sortedBundles = lodash.sortBy(bundles, function(bundle) {
         return bundle.priority;
       });
+      //
       lodash.forEach(sortedBundles, function(bundle) {
         self.wire(apporo, bundle.layerPack);
       });
-      applyErrorHandler(apporo);
+      //
+      applyErrorHandler({ errorMap }, apporo);
+      //
       LX.has('silly') && LX.log('silly', LT.toMessage({
         tags: [ blockRef, 'combine', 'combined' ],
         text: ' - combine(): bundles has been combined'
@@ -396,85 +399,6 @@ function WebweaverService(params) {
     }
     errorMap[errorName] = errorMap[errorName] || mappingRule;
   });
-
-  let getErrorMappingId = function(error) {
-    let mappingId = null;
-    if (error && typeof error.name === 'string') {
-      mappingId = error.name;
-      if (mappingId && error.code) {
-        mappingId = mappingId + '_' + error.code;
-      }
-    }
-    return mappingId;
-  }
-
-  let transformError = function(error) {
-    let mappingId = getErrorMappingId(error);
-    if (mappingId && errorMap[mappingId]) {
-      const mapping = errorMap[mappingId];
-      let output = {};
-      // apply transforming methods
-      if (mapping.transform && lodash.isFunction(mapping.transform.statusCode)) {
-        output.statusCode = mapping.transform.statusCode(error);
-      }
-      if (mapping.transform && lodash.isFunction(mapping.transform.statusMessage)) {
-        output.statusMessage = mapping.transform.statusMessage(error);
-      }
-      if (mapping.transform && lodash.isFunction(mapping.transform.responseBody)) {
-        output.responseBody = mapping.transform.responseBody(error);
-      }
-      // apply error properties
-      if (!lodash.isString(output.statusMessage)) {
-        output.statusMessage = error.message;
-      }
-      if (lodash.isEmpty(output.responseBody)) {
-        output.responseBody = error.payload;
-      }
-      // apply mapping.default for undefined fields
-      if (!lodash.isNumber(output.statusCode)) {
-        output.statusCode = mapping.default && mapping.default.statusCode;
-      }
-      if (!lodash.isString(output.statusMessage)) {
-        output.statusMessage = mapping.default && mapping.default.statusMessage;
-      }
-      if (lodash.isEmpty(output.responseBody)) {
-        output.responseBody = mapping.default && mapping.default.responseBody;
-      }
-      // apply default statusCode
-      output.statusCode = output.statusCode || 500;
-      return output;
-    }
-    return {
-      statusCode: 500,
-      statusMessage: 'Unknown Error',
-      responseBody: {
-        type: typeof(error),
-        name: error && error.name,
-        code: error && error.code,
-        message: error && error.message
-      }
-    }
-  }
-
-  let applyErrorHandler = function(slot) {
-    slot.use(function (err, req, res, next) {
-      if (res.headersSent) {
-        return next(err);
-      }
-      let output = transformError(err);
-      res.statusMessage = output.statusMessage;
-      res.status(output.statusCode);
-      if (output.responseBody) {
-        if (lodash.isString(output.responseBody)) {
-          res.send(output.responseBody);
-        } else {
-          res.json(output.responseBody);
-        }
-      } else {
-        res.send();
-      }
-    });
-  }
 
   //---------------------------------------------------------------------------
 
@@ -573,4 +497,84 @@ function wireBranches (context, slot, layers, superTrail) {
 function createRouter (context) {
   const { express } = context || {};
   return express();
+}
+
+let applyErrorHandler = function(context, slot) {
+  slot.use(function (err, req, res, next) {
+    if (res.headersSent) {
+      return next(err);
+    }
+    let output = transformError(context, err);
+    res.statusMessage = output.statusMessage;
+    res.status(output.statusCode);
+    if (output.responseBody) {
+      if (lodash.isString(output.responseBody)) {
+        res.send(output.responseBody);
+      } else {
+        res.json(output.responseBody);
+      }
+    } else {
+      res.send();
+    }
+  });
+}
+
+let transformError = function(context, error) {
+  const { errorMap } = context || {};
+  let mappingId = getErrorMappingId(error);
+  if (mappingId && errorMap[mappingId]) {
+    const mapping = errorMap[mappingId];
+    let output = {};
+    // apply transforming methods
+    if (mapping.transform && lodash.isFunction(mapping.transform.statusCode)) {
+      output.statusCode = mapping.transform.statusCode(error);
+    }
+    if (mapping.transform && lodash.isFunction(mapping.transform.statusMessage)) {
+      output.statusMessage = mapping.transform.statusMessage(error);
+    }
+    if (mapping.transform && lodash.isFunction(mapping.transform.responseBody)) {
+      output.responseBody = mapping.transform.responseBody(error);
+    }
+    // apply error properties
+    if (!lodash.isString(output.statusMessage)) {
+      output.statusMessage = error.message;
+    }
+    if (lodash.isEmpty(output.responseBody)) {
+      output.responseBody = error.payload;
+    }
+    // apply mapping.default for undefined fields
+    if (!lodash.isNumber(output.statusCode)) {
+      output.statusCode = mapping.default && mapping.default.statusCode;
+    }
+    if (!lodash.isString(output.statusMessage)) {
+      output.statusMessage = mapping.default && mapping.default.statusMessage;
+    }
+    if (lodash.isEmpty(output.responseBody)) {
+      output.responseBody = mapping.default && mapping.default.responseBody;
+    }
+    // apply default statusCode
+    output.statusCode = output.statusCode || 500;
+    return output;
+  }
+  return {
+    statusCode: 500,
+    statusMessage: 'Unknown Error',
+    responseBody: {
+      type: typeof(error),
+      name: error && error.name,
+      code: error && error.code,
+      message: error && error.message
+    }
+  }
+}
+
+let getErrorMappingId = function(error) {
+  let mappingId = null;
+  if (error && typeof error.name === 'string') {
+    mappingId = error.name;
+    if (mappingId && error.code) {
+      mappingId = mappingId + '_' + error.code;
+    }
+  }
+  return mappingId;
 }

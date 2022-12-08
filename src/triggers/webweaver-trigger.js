@@ -5,12 +5,12 @@ const chores = Devebot.require('chores');
 
 function WebweaverTrigger(params) {
   params = params || {};
-  let self = this;
+  const self = this;
 
-  let LX = params.loggingFactory.getLogger();
-  let LT = params.loggingFactory.getTracer();
-  let packageName = params.packageName || 'app-webweaver';
-  let blockRef = chores.getBlockRef(__filename, packageName);
+  const LX = params.loggingFactory.getLogger();
+  const LT = params.loggingFactory.getTracer();
+  const packageName = params.packageName || 'app-webweaver';
+  const blockRef = chores.getBlockRef(__filename, packageName);
 
   self.start = function() {
     LX.has('silly') && LX.log('silly', LT.add({ blockRef }).toMessage({

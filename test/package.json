@@ -11,5 +11,8 @@
     "liberica": "^0.4.0",
     "mocha": "^10.1.0",
     "superagent": "^8.0.6"
+  },
+  "dependencies": {
+    "signtrap": "^0.1.2"
   }
 }

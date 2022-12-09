@@ -24,7 +24,7 @@ function WebweaverService(params) {
   const blockRef = chores.getBlockRef(__filename, packageName);
 
   const pluginCfg = params.sandboxConfig || {};
-  const webserverTrigger = params["app-webserver/webserverTrigger"];
+  const webserverTrigger = params.webserverTrigger;
 
   const apporo = express();
 
@@ -432,7 +432,7 @@ function wireLayer (context, slot, layer, superTrail) {
   slot = slot || createRouter(context);
   superTrail = superTrail || [];
   //
-  if (layer === null) return slot;
+  if (layer === null || layer === undefined) return slot;
   //
   layer.trails = superTrail.slice(0);
   layer.trails.push(layer.name);

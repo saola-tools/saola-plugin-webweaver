@@ -14,7 +14,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-function WebweaverService(params) {
+function WebweaverService (params) {
   params = params || {};
   const self = this;
 
@@ -270,18 +270,18 @@ function WebweaverService(params) {
       path: path,
       middleware: methodOverrideInstance,
       branches: branches
-    }
-  }
+    };
+  };
 
   self.getChangePowerByLayer = function(branches, path) {
     let middleware = null;
     if (pluginCfg.setPoweredBy) {
-      middleware = function setPoweredBy(req, res, next) {
+      middleware = function setPoweredBy (req, res, next) {
         res.setHeader('X-Powered-By', pluginCfg.setPoweredBy);
         next();
       };
     } else {
-      middleware = function hidePoweredBy(req, res, next) {
+      middleware = function hidePoweredBy (req, res, next) {
         res.removeHeader('X-Powered-By');
         next();
       };
@@ -291,23 +291,23 @@ function WebweaverService(params) {
       path: path,
       middleware: middleware,
       branches: branches
-    }
-  }
+    };
+  };
 
   self.getDefaultRedirectLayer = function(path) {
     let layer = {
       skipped: true,
       name: 'defaultRedirect',
       path: path || ['/$'],
-      middleware: function defaultRedirect(req, res, next) {
+      middleware: function defaultRedirect (req, res, next) {
         res.redirect(pluginCfg.defaultRedirectUrl);
       }
-    }
+    };
     if (pluginCfg.defaultRedirectUrl) {
       layer.skipped = false;
     }
     return layer;
-  }
+  };
 
   //---------------------------------------------------------------------------
 
@@ -315,7 +315,7 @@ function WebweaverService(params) {
     return lodash.merge({}, layerDef, {
       middleware: express.static(staticFilesDir)
     });
-  }
+  };
 
   self.settleBranchQueueLayer = function(branchQueue, name) {
     branchQueue = branchQueue || {
@@ -323,7 +323,7 @@ function WebweaverService(params) {
       middleware: express()
     };
     return branchQueue;
-  }
+  };
 
   //---------------------------------------------------------------------------
 
@@ -346,7 +346,7 @@ function WebweaverService(params) {
         text: ' - inject() layerweb is injected to #${priority}'
       }));
     }
-  }
+  };
 
   self.combine = function() {
     if (bundleFreezed) {
@@ -371,12 +371,12 @@ function WebweaverService(params) {
         text: ' - combine(): bundles has been combined'
       }));
     }
-  }
+  };
 
   self.wire = function(slot, layerOrBranches, superTrail) {
     const context = { LX, LT, blockRef, express };
     return wire(context, slot, layerOrBranches, superTrail);
-  }
+  };
 
   // Deprecated
   self.inject = self.push;
@@ -402,11 +402,15 @@ function WebweaverService(params) {
 
   Object.defineProperties(self, {
     express: {
-      get: function() { return express },
+      get: function() {
+        return express;
+      },
       set: function(value) {}
     },
     session: {
-      get: function() { return sessionInstance },
+      get: function() {
+        return sessionInstance;
+      },
       set: function(value) {}
     }
   });
@@ -563,7 +567,7 @@ function transformError (context, error) {
       code: error && error.code,
       message: error && error.message
     }
-  }
+  };
 }
 
 function getErrorMappingId (error) {

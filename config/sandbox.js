@@ -3,16 +3,16 @@ module.exports = {
     appWebweaver: {
       sslProtectedUrls: [],
       session: {
-        name: 'sessionId',
-        secret: 'd0bi3td4y',
+        name: "sessionId",
+        secret: "d0bi3td4y",
         cookie: {},
         store: {},
       },
-      jsonBodySizeLimit: '2mb',
+      jsonBodySizeLimit: "2mb",
       cacheControl: {
         enabled: false,
         pattern: {
-          operator: 'or',
+          operator: "or",
           url: /^\/(assets|css|js|picture|font)\/.+/,
           contentType: /^\/(jpeg|png|gif)$/
         },

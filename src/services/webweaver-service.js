@@ -7,9 +7,9 @@ const pinbug = Devebot.require("pinbug");
 
 const express = require("express");
 const session = require("express-session");
-const fileStore = require("session-file-store")(session);
-const mongoStore = require("connect-mongo")(session);
-const redisStore = require("connect-redis")(session);
+const FileStore = require("session-file-store")(session);
+const MongoStore = require("connect-mongo")(session);
+const RedisStore = require("connect-redis")(session);
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -28,17 +28,19 @@ function WebweaverService (params) {
 
   const apporo = express();
 
-  const corsCfg = lodash.get(pluginCfg, "cors", {});
-  if (corsCfg.enabled === true && corsCfg.mode === "simple") {
-    apporo.use(cors());
-  }
-
   Object.defineProperty(self, "outlet", {
     get: function() { return apporo; },
     set: function(value) {}
   });
 
   webserverTrigger.attach(apporo);
+
+  //---------------------------------------------------------------------------
+
+  const corsCfg = lodash.get(pluginCfg, "cors", {});
+  if (corsCfg.enabled === true && corsCfg.mode === "simple") {
+    apporo.use(cors());
+  }
 
   //---------------------------------------------------------------------------
 
@@ -130,7 +132,7 @@ function WebweaverService (params) {
       let sessionStoreDef = lodash.get(pluginCfg, ["session", "store"], {});
       switch (sessionStoreDef.type) {
         case "file":
-          sessionOpts.store = new fileStore({
+          sessionOpts.store = new FileStore({
             path: sessionStoreDef.path
           });
           L && L.has("silly") && L.log("silly", T && T.add({
@@ -142,7 +144,7 @@ function WebweaverService (params) {
           }));
           break;
         case "redis":
-          sessionOpts.store = new redisStore({
+          sessionOpts.store = new RedisStore({
             url: sessionStoreDef.url
           });
           L && L.has("silly") && L.log("silly", T && T.add({
@@ -154,7 +156,7 @@ function WebweaverService (params) {
           }));
           break;
         case "mongodb":
-          sessionOpts.store = new mongoStore({
+          sessionOpts.store = new MongoStore({
             url: sessionStoreDef.url
           });
           L && L.has("silly") && L.log("silly", T && T.add({

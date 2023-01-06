@@ -13,7 +13,7 @@ describe("app-webweaver", function() {
   describe("server-life-cycle", function() {
     before(function() {
       chores.setEnvironments({
-        DEVEBOT_FORCING_SILENT: "devebot,webweaver",
+        DEVEBOT_FORCING_SILENT: "devebot,webserver",
         LOGOLITE_FULL_LOG_MODE: "false",
         LOGOLITE_ALWAYS_ENABLED: "all",
         LOGOLITE_ALWAYS_MUTED: "all"

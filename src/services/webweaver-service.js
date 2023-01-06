@@ -14,6 +14,8 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
+const { standardizeConfig } = require("app-webserver").require("runlet");
+
 function WebweaverService (params) {
   params = params || {};
   const self = this;
@@ -24,44 +26,27 @@ function WebweaverService (params) {
   const blockRef = chores.getBlockRef(__filename, packageName);
 
   const pluginCfg = params.sandboxConfig || {};
-  const webserverTrigger = params.webserverTrigger;
-
-  const apporo = express();
-
-  Object.defineProperty(self, "outlet", {
-    get: function() { return apporo; },
-    set: function(value) {}
-  });
-
-  webserverTrigger.attach(apporo);
+  const webserverHandler = params.webserverHandler;
 
   //---------------------------------------------------------------------------
-
-  const corsCfg = lodash.get(pluginCfg, "cors", {});
-  if (corsCfg.enabled === true && corsCfg.mode === "simple") {
-    apporo.use(cors());
-  }
-
-  //---------------------------------------------------------------------------
-
-  let debugx = null;
-  let printRequestInfoInstance = function(req, res, next) {
-    debugx = debugx || pinbug("app-webweaver:service");
-    process.nextTick(function() {
-      debugx.enabled && debugx("=@ webweaver receives a new request:");
-      debugx.enabled && debugx(" - IP: %s / %s", req.ip, JSON.stringify(req.ips));
-      debugx.enabled && debugx(" - protocol: " + req.protocol);
-      debugx.enabled && debugx(" - host: " + req.hostname);
-      debugx.enabled && debugx(" - path: " + req.path);
-      debugx.enabled && debugx(" - URL: " + req.url);
-      debugx.enabled && debugx(" - originalUrl: " + req.originalUrl);
-      debugx.enabled && debugx(" - body: " + JSON.stringify(req.body));
-      debugx.enabled && debugx(" - user-agent: " + req.headers["user-agent"]);
-    });
-    next();
-  };
 
   self.getPrintRequestInfoLayer = function(branches, path) {
+    let debugx = null;
+    let printRequestInfoInstance = function(req, res, next) {
+      debugx = debugx || pinbug("app-webweaver:service");
+      process.nextTick(function() {
+        debugx.enabled && debugx("=@ webweaver receives a new request:");
+        debugx.enabled && debugx(" - IP: %s / %s", req.ip, JSON.stringify(req.ips));
+        debugx.enabled && debugx(" - protocol: " + req.protocol);
+        debugx.enabled && debugx(" - host: " + req.hostname);
+        debugx.enabled && debugx(" - path: " + req.path);
+        debugx.enabled && debugx(" - URL: " + req.url);
+        debugx.enabled && debugx(" - originalUrl: " + req.originalUrl);
+        debugx.enabled && debugx(" - body: " + JSON.stringify(req.body));
+        debugx.enabled && debugx(" - user-agent: " + req.headers["user-agent"]);
+      });
+      next();
+    };
     return {
       skipped: !pluginCfg.printRequestInfo,
       name: "printRequestInfo",
@@ -329,6 +314,62 @@ function WebweaverService (params) {
 
   //---------------------------------------------------------------------------
 
+  Object.defineProperties(self, {
+    express: {
+      get: function() {
+        return express;
+      },
+      set: function(value) {}
+    },
+    session: {
+      get: function() {
+        return sessionInstance;
+      },
+      set: function(value) {}
+    }
+  });
+
+  //---------------------------------------------------------------------------
+
+  const runletConfig = standardizeConfig(params.sandboxConfig);
+
+  const webweaverRunlet = new WebweaverRunlet({ L, T, blockRef, runletConfig, webserverHandler });
+
+  self.push = function(layerOrBranches, priority) {
+    return webweaverRunlet.push(layerOrBranches, priority);
+  };
+  //
+  self.combine = function() {
+    return webweaverRunlet.combine();
+  };
+  //
+  self.wire = function(slot, layerOrBranches, superTrail) {
+    return webweaverRunlet.wire(slot, layerOrBranches, superTrail);
+  };
+  //
+  self.inject = self.push;
+}
+
+function WebweaverRunlet (params) {
+  const self = this;
+  const { L, T, blockRef, runletConfig, webserverHandler } = params;
+
+  const apporo = express();
+
+  Object.defineProperty(self, "outlet", {
+    get: function() { return apporo; },
+    set: function(value) {}
+  });
+
+  webserverHandler.getRunlet().attach(apporo);
+
+  //---------------------------------------------------------------------------
+
+  const corsCfg = lodash.get(runletConfig, "cors", {});
+  if (corsCfg.enabled === true && corsCfg.mode === "simple") {
+    apporo.use(cors());
+  }
+
   let bundles = [];
   let bundleFreezed = false;
 
@@ -385,7 +426,7 @@ function WebweaverService (params) {
 
   //---------------------------------------------------------------------------
 
-  let errorHandlerCfg = pluginCfg.errorHandler || {};
+  let errorHandlerCfg = runletConfig.errorHandler || {};
   let errorMap = {};
 
   lodash.forEach(errorHandlerCfg.mappings, function(mapping) {
@@ -399,27 +440,10 @@ function WebweaverService (params) {
     }
     errorMap[errorName] = errorMap[errorName] || mappingRule;
   });
-
-  //---------------------------------------------------------------------------
-
-  Object.defineProperties(self, {
-    express: {
-      get: function() {
-        return express;
-      },
-      set: function(value) {}
-    },
-    session: {
-      get: function() {
-        return sessionInstance;
-      },
-      set: function(value) {}
-    }
-  });
 }
 
 WebweaverService.referenceHash = {
-  webserverTrigger: "app-webserver/webserverTrigger"
+  webserverHandler: "app-webserver/webserverHandler"
 };
 
 module.exports = WebweaverService;

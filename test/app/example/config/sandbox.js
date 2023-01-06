@@ -39,7 +39,7 @@ module.exports = {
     },
     appWebserver: {
       host: "0.0.0.0",
-      port: 18080
+      port: 7979
     }
   }
 };

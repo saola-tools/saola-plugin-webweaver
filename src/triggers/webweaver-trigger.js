@@ -6,13 +6,13 @@ const chores = Devebot.require("chores");
 function WebweaverTrigger (params) {
   params = params || {};
 
-  const LX = params.loggingFactory.getLogger();
-  const LT = params.loggingFactory.getTracer();
+  const L = params.loggingFactory.getLogger();
+  const T = params.loggingFactory.getTracer();
   const packageName = params.packageName || "app-webweaver";
   const blockRef = chores.getBlockRef(__filename, packageName);
 
   this.start = function() {
-    LX.has("silly") && LX.log("silly", LT.add({ blockRef }).toMessage({
+    L && L.has("silly") && L.log("silly", T && T.add({ blockRef }).toMessage({
       tags: [ blockRef, "trigger-starting" ],
       text: " - trigger[${blockRef}] is starting"
     }));
@@ -20,7 +20,7 @@ function WebweaverTrigger (params) {
   };
 
   this.stop = function() {
-    LX.has("silly") && LX.log("silly", LT.add({ blockRef }).toMessage({
+    L && L.has("silly") && L.log("silly", T && T.add({ blockRef }).toMessage({
       tags: [ blockRef, "trigger-stopping" ],
       text: " - trigger[${blockRef}] is stopping"
     }));

@@ -18,8 +18,8 @@ function WebweaverService (params) {
   params = params || {};
   const self = this;
 
-  const LX = params.loggingFactory.getLogger();
-  const LT = params.loggingFactory.getTracer();
+  const L = params.loggingFactory.getLogger();
+  const T = params.loggingFactory.getTracer();
   const packageName = params.packageName || "app-webweaver";
   const blockRef = chores.getBlockRef(__filename, packageName);
 
@@ -77,7 +77,7 @@ function WebweaverService (params) {
       middleware: function(req, res, next) {
         if (req.client.authorized) {
           next();
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             url: req.originalUrl
           }).toMessage({
             tags: [ blockRef, "url-ssl-protection-layer", "passed" ],
@@ -85,7 +85,7 @@ function WebweaverService (params) {
           }));
         } else {
           res.json({"status": "Access denied"}, 401);
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             url: req.originalUrl
           }).toMessage({
             tags: [ blockRef, "url-ssl-protection-layer", "denied" ],
@@ -133,7 +133,7 @@ function WebweaverService (params) {
           sessionOpts.store = new fileStore({
             path: sessionStoreDef.path
           });
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             sessionStoreType: "fileStore",
             urlOrPath: sessionStoreDef.path
           }).toMessage({
@@ -145,7 +145,7 @@ function WebweaverService (params) {
           sessionOpts.store = new redisStore({
             url: sessionStoreDef.url
           });
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             sessionStoreType: "redisStore",
             urlOrPath: sessionStoreDef.url
           }).toMessage({
@@ -157,7 +157,7 @@ function WebweaverService (params) {
           sessionOpts.store = new mongoStore({
             url: sessionStoreDef.url
           });
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             sessionStoreType: "mongoStore",
             urlOrPath: sessionStoreDef.url
           }).toMessage({
@@ -166,7 +166,7 @@ function WebweaverService (params) {
           }));
           break;
         default:
-          LX.has("silly") && LX.log("silly", LT.add({
+          L && L.has("silly") && L.log("silly", T && T.add({
             sessionStoreType: "memoryStore"
           }).toMessage({
             tags: [ blockRef, "session-store-set" ],
@@ -332,14 +332,14 @@ function WebweaverService (params) {
 
   self.push = function(layerOrBranches, priority) {
     if (bundleFreezed) {
-      LX.has("silly") && LX.log("silly", LT.toMessage({
+      L && L.has("silly") && L.log("silly", T && T.toMessage({
         tags: [ blockRef, "inject", "freezed" ],
         text: " - inject(), but bundles has been freezed"
       }));
     } else {
       priority = lodash.isNumber(priority) ? priority : 0;
       bundles.push({ layerPack: layerOrBranches, priority: priority });
-      LX.has("silly") && LX.log("silly", LT.add({
+      L && L.has("silly") && L.log("silly", T && T.add({
         priority: priority
       }).toMessage({
         tags: [ blockRef, "inject", "injected" ],
@@ -350,7 +350,7 @@ function WebweaverService (params) {
 
   self.combine = function() {
     if (bundleFreezed) {
-      LX.has("silly") && LX.log("silly", LT.toMessage({
+      L && L.has("silly") && L.log("silly", T && T.toMessage({
         tags: [ blockRef, "combine", "freezed" ],
         text: " - combine(), but bundles has been freezed"
       }));
@@ -366,7 +366,7 @@ function WebweaverService (params) {
       //
       applyErrorHandler({ errorMap }, apporo);
       //
-      LX.has("silly") && LX.log("silly", LT.toMessage({
+      L && L.has("silly") && L.log("silly", T && T.toMessage({
         tags: [ blockRef, "combine", "combined" ],
         text: " - combine(): bundles has been combined"
       }));
@@ -374,7 +374,7 @@ function WebweaverService (params) {
   };
 
   self.wire = function(slot, layerOrBranches, superTrail) {
-    const context = { LX, LT, blockRef, express };
+    const context = { L, T, blockRef, express };
     return wire(context, slot, layerOrBranches, superTrail);
   };
 
@@ -431,7 +431,7 @@ function wire (context, slot, layerOrBranches, superTrail) {
 }
 
 function wireLayer (context, slot, layer, superTrail) {
-  const { LX, LT, blockRef } = context || {};
+  const { L, T, blockRef } = context || {};
   //
   slot = slot || createRouter(context);
   superTrail = superTrail || [];
@@ -446,7 +446,7 @@ function wireLayer (context, slot, layer, superTrail) {
   if (layer.enabled !== false) {
     if (layer.skipped !== true && lodash.isFunction(layer.middleware)) {
       if (layer.path) {
-        LX.has("silly") && LX.log("silly", LT.add({
+        L && L.has("silly") && L.log("silly", T && T.add({
           footprint: footprint,
           path: lodash.isString(layer.path) ? layer.path : JSON.stringify(layer.path)
         }).toMessage({
@@ -457,7 +457,7 @@ function wireLayer (context, slot, layer, superTrail) {
           slot.use(layer.path, layer.middleware);
         }
       } else {
-        LX.has("silly") && LX.log("silly", LT.add({
+        L && L.has("silly") && L.log("silly", T && T.add({
           footprint: footprint
         }).toMessage({
           tags: [ blockRef, "wire-layer", "layer-path-off" ],
@@ -466,7 +466,7 @@ function wireLayer (context, slot, layer, superTrail) {
         slot.use(layer.middleware);
       }
     } else {
-      LX.has("silly") && LX.log("silly", LT.add({
+      L && L.has("silly") && L.log("silly", T && T.add({
         footprint: footprint
       }).toMessage({
         tags: [ blockRef, "wire-layer", "layer-skipped" ],
@@ -477,7 +477,7 @@ function wireLayer (context, slot, layer, superTrail) {
       slot.use(wireBranches(context, null, layer.branches, layer.trails));
     }
   } else {
-    LX.has("silly") && LX.log("silly", LT.add({
+    L && L.has("silly") && L.log("silly", T && T.add({
       footprint: footprint
     }).toMessage({
       tags: [ blockRef, "wire-layer", "layer-disabled" ],

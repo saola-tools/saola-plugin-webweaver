@@ -18,14 +18,12 @@ const { DEFAULT_RUNLET_NAME, standardizeConfig } = require("app-webserver").requ
 
 function WebweaverService (params) {
   params = params || {};
-  const self = this;
 
   const L = params.loggingFactory.getLogger();
   const T = params.loggingFactory.getTracer();
   const packageName = params.packageName || "app-webweaver";
   const blockRef = chores.getBlockRef(__filename, packageName);
 
-  const pluginCfg = params.sandboxConfig || {};
   const webserverHandler = params.webserverHandler;
 
   //---------------------------------------------------------------------------
@@ -54,88 +52,88 @@ function WebweaverService (params) {
   // @deprecated
   this.getPrintRequestInfoLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getPrintRequestInfoLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getUrlSslProtectionLayer = function(branches, sslProtectedUrls) {
     return this.hasRunlet() && this.getRunlet().getUrlSslProtectionLayer(branches, sslProtectedUrls) || undefined;
-  }
+  };
 
   // @deprecated
   this.getCacheControlLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getCacheControlLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getSessionLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getSessionLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getCookieParserLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getCookieParserLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getJsonBodyParserLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getJsonBodyParserLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getUrlencodedBodyParserLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getUrlencodedBodyParserLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getCompressionLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getCompressionLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getCsrfLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getCsrfLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getHelmetLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getHelmetLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getMethodOverrideLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getMethodOverrideLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getChangePowerByLayer = function(branches, path) {
     return this.hasRunlet() && this.getRunlet().getChangePowerByLayer(branches, path) || undefined;
-  }
+  };
 
   // @deprecated
   this.getDefaultRedirectLayer = function(path) {
     return this.hasRunlet() && this.getRunlet().getDefaultRedirectLayer(path) || undefined;
-  }
+  };
 
   // @deprecated
   this.createStaticFilesLayer = function(layerDef, staticFilesDir) {
     return this.hasRunlet() && this.getRunlet().createStaticFilesLayer(layerDef, staticFilesDir) || undefined;
-  }
+  };
 
-  self.push = function(layerOrBranches, priority) {
+  this.push = function(layerOrBranches, priority) {
     return this.hasRunlet() && this.getRunlet().push(layerOrBranches, priority) || undefined;
   };
   //
-  self.combine = function() {
+  this.combine = function() {
     return this.hasRunlet() && this.getRunlet().combine() || undefined;
   };
   //
-  self.wire = function(slot, layerOrBranches, superTrail) {
+  this.wire = function(slot, layerOrBranches, superTrail) {
     return this.hasRunlet() && this.getRunlet().wire(slot, layerOrBranches, superTrail) || undefined;
   };
   //
-  self.inject = self.push;
+  this.inject = this.push;
   //
-  Object.defineProperties(self, {
+  Object.defineProperties(this, {
     express: {
       get: function() {
         return express;
@@ -152,12 +150,11 @@ function WebweaverService (params) {
 }
 
 function WebweaverRunlet (params) {
-  const self = this;
-  const { L, T, blockRef, runletConfig, runletName, webserverHandler } = params;
+  const { L, T, blockRef, runletConfig, runletName, webserverHandler } = params || {};
 
   const apporo = express();
 
-  Object.defineProperty(self, "outlet", {
+  Object.defineProperty(this, "outlet", {
     get: function() { return apporo; },
     set: function(value) {}
   });
@@ -173,7 +170,7 @@ function WebweaverRunlet (params) {
 
   //---------------------------------------------------------------------------
 
-  self.getPrintRequestInfoLayer = function(branches, path) {
+  this.getPrintRequestInfoLayer = function(branches, path) {
     let debugx = null;
     let printRequestInfoInstance = function(req, res, next) {
       debugx = debugx || pinbug("app-webweaver:service");
@@ -199,7 +196,7 @@ function WebweaverRunlet (params) {
     };
   };
 
-  self.getUrlSslProtectionLayer = function(branches, sslProtectedUrls) {
+  this.getUrlSslProtectionLayer = function(branches, sslProtectedUrls) {
     let sslUrls = sslProtectedUrls || runletConfig.sslProtectedUrls || [];
     return {
       name: "urlProtectionBySSL",
@@ -227,7 +224,7 @@ function WebweaverRunlet (params) {
     };
   };
 
-  self.getCacheControlLayer = function(branches, path) {
+  this.getCacheControlLayer = function(branches, path) {
     let cacheControlConfig = lodash.get(runletConfig, ["cacheControl"], {});
     return {
       name: "cacheControl",
@@ -248,7 +245,7 @@ function WebweaverRunlet (params) {
   let sessionCookie = lodash.get(runletConfig, "session.cookie", null);
   let sessionInstance = null;
 
-  self.getSessionLayer = function(branches, path) {
+  this.getSessionLayer = function(branches, path) {
     if (sessionInstance === null) {
       let sessionOpts = {
         resave: true,
@@ -315,7 +312,7 @@ function WebweaverRunlet (params) {
 
   let cookieParserInstance = null;
 
-  self.getCookieParserLayer = function(branches, path) {
+  this.getCookieParserLayer = function(branches, path) {
     cookieParserInstance = cookieParserInstance || cookieParser(sessionSecret);
     return {
       name: "cookieParser",
@@ -327,7 +324,7 @@ function WebweaverRunlet (params) {
 
   let jsonBodyParser = null;
 
-  self.getJsonBodyParserLayer = function(branches, path) {
+  this.getJsonBodyParserLayer = function(branches, path) {
     jsonBodyParser = jsonBodyParser || bodyParser.json({
       limit: runletConfig.jsonBodySizeLimit || "2mb",
       extended: true
@@ -342,7 +339,7 @@ function WebweaverRunlet (params) {
 
   let urlencodedBodyParser = null;
 
-  self.getUrlencodedBodyParserLayer = function(branches, path) {
+  this.getUrlencodedBodyParserLayer = function(branches, path) {
     urlencodedBodyParser = urlencodedBodyParser || bodyParser.urlencoded({
       limit: runletConfig.urlencodedBodySizeLimit || undefined,
       extended: true
@@ -357,7 +354,7 @@ function WebweaverRunlet (params) {
 
   let compressionInstance = null;
 
-  self.getCompressionLayer = function(branches, path) {
+  this.getCompressionLayer = function(branches, path) {
     compressionInstance = compressionInstance || require("compression")();
     return {
       name: "compression",
@@ -369,7 +366,7 @@ function WebweaverRunlet (params) {
 
   let csrfInstance = null;
 
-  self.getCsrfLayer = function(branches, path) {
+  this.getCsrfLayer = function(branches, path) {
     csrfInstance = csrfInstance || require("csurf")({ cookie: { signed: true } });
     return {
       name: "csurf",
@@ -381,7 +378,7 @@ function WebweaverRunlet (params) {
 
   let helmetInstance = null;
 
-  self.getHelmetLayer = function(branches, path) {
+  this.getHelmetLayer = function(branches, path) {
     helmetInstance = helmetInstance || require("helmet")();
     return {
       name: "helmet",
@@ -393,7 +390,7 @@ function WebweaverRunlet (params) {
 
   let methodOverrideInstance = null;
 
-  self.getMethodOverrideLayer = function(branches, path) {
+  this.getMethodOverrideLayer = function(branches, path) {
     methodOverrideInstance = methodOverrideInstance || require("method-override")();
     return {
       name: "methodOverride",
@@ -403,7 +400,7 @@ function WebweaverRunlet (params) {
     };
   };
 
-  self.getChangePowerByLayer = function(branches, path) {
+  this.getChangePowerByLayer = function(branches, path) {
     let middleware = null;
     if (runletConfig.setPoweredBy) {
       middleware = function setPoweredBy (req, res, next) {
@@ -424,7 +421,7 @@ function WebweaverRunlet (params) {
     };
   };
 
-  self.getDefaultRedirectLayer = function(path) {
+  this.getDefaultRedirectLayer = function(path) {
     let layer = {
       skipped: true,
       name: "defaultRedirect",
@@ -441,13 +438,13 @@ function WebweaverRunlet (params) {
 
   //---------------------------------------------------------------------------
 
-  self.createStaticFilesLayer = function(layerDef, staticFilesDir) {
+  this.createStaticFilesLayer = function(layerDef, staticFilesDir) {
     return lodash.merge({}, layerDef, {
       middleware: express.static(staticFilesDir)
     });
   };
 
-  self.settleBranchQueueLayer = function(branchQueue, name) {
+  this.settleBranchQueueLayer = function(branchQueue, name) {
     branchQueue = branchQueue || {
       name: name || "app-webweaver-unknown",
       middleware: express()
@@ -457,7 +454,7 @@ function WebweaverRunlet (params) {
 
   //---------------------------------------------------------------------------
 
-  Object.defineProperties(self, {
+  Object.defineProperties(this, {
     session: {
       get: function() {
         return sessionInstance;
@@ -471,7 +468,7 @@ function WebweaverRunlet (params) {
   let bundles = [];
   let bundleFreezed = false;
 
-  self.push = function(layerOrBranches, priority) {
+  this.push = function(layerOrBranches, priority) {
     if (bundleFreezed) {
       L && L.has("silly") && L.log("silly", T && T.toMessage({
         tags: [ blockRef, "inject", "freezed" ],
@@ -489,7 +486,8 @@ function WebweaverRunlet (params) {
     }
   };
 
-  self.combine = function() {
+  this.combine = function() {
+    const self = this;
     if (bundleFreezed) {
       L && L.has("silly") && L.log("silly", T && T.toMessage({
         tags: [ blockRef, "combine", "freezed" ],
@@ -514,13 +512,10 @@ function WebweaverRunlet (params) {
     }
   };
 
-  self.wire = function(slot, layerOrBranches, superTrail) {
+  this.wire = function(slot, layerOrBranches, superTrail) {
     const context = { L, T, blockRef, express };
     return wire(context, slot, layerOrBranches, superTrail);
   };
-
-  // Deprecated
-  self.inject = self.push;
 
   //---------------------------------------------------------------------------
 

@@ -6,7 +6,7 @@ const lodash = Devebot.require("lodash");
 const pinbug = Devebot.require("pinbug");
 const util = require("util");
 
-const targetRunlet = "manager";
+const targetPortlet = "manager";
 
 function Service (params) {
   const debugx = pinbug("app-webweaver:example");
@@ -80,12 +80,12 @@ function Service (params) {
     };
   };
 
-  if (sandboxConfig.enabled !== false && webweaverService.hasRunlet(targetRunlet)) {
-    const runlet = webweaverService.getRunlet(targetRunlet);
-    runlet.push([
-      runlet.getDefaultRedirectLayer(),
+  if (sandboxConfig.enabled !== false && webweaverService.hasPortlet(targetPortlet)) {
+    const portlet = webweaverService.getPortlet(targetPortlet);
+    portlet.push([
+      portlet.getDefaultRedirectLayer(),
       getLayer1([
-        runlet.getSessionLayer([
+        portlet.getSessionLayer([
           getLayer2()
         ])
       ])

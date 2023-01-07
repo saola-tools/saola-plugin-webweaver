@@ -23,7 +23,7 @@ curl http://0.0.0.0:7979/example/1234567890
 ```shell
 export DEBUG=devebot*,app*
 export LOGOLITE_DEBUGLOG_ENABLED=true
-export DEVEBOT_SANDBOX=runlets
+export DEVEBOT_SANDBOX=portlets
 node test/app/example
 ```
 

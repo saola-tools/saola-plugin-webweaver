@@ -25,8 +25,8 @@
     "build": "npm exec -- babel ./src -d ./lib",
     "check": "npm exec -- eslint config src index.js",
     "check-silent": "npm exec -- eslint --quiet config src index.js",
-    "pretest": "npm run check-silent && npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-test} npm run build",
-    "testOnly": "npm --prefix=test exec -- mocha --recursive ./**/tdd/*-test.js",
+    "pretest": "npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-test} npm run build",
+    "testOnly": "npm --prefix=test exec -- mocha --recursive test/tdd/*-test.js test/bdd/*-test.js",
     "test": "npm run testOnly",
     "prepublishOnly": "npm run check-silent && npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-production} npm run build",
     "verify": "npm run prepublishOnly && npm run testOnly"
@@ -36,11 +36,11 @@
     "devebot-plugin"
   ],
   "peerDependencies": {
-    "app-webserver": "^0.4.0",
-    "devebot": "^0.4.0"
+    "app-webserver": "^0.4.1",
+    "devebot": "^0.4.1"
   },
   "dependencies": {
-    "app-webserver": "^0.4.0",
+    "app-webserver": "^0.4.1",
     "body-parser": "^1.18.2",
     "compression": "^1.7.1",
     "connect-mongo": "^3.2.0",
@@ -48,7 +48,7 @@
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "csurf": "^1.9.0",
-    "devebot": "^0.4.0",
+    "devebot": "^0.4.1",
     "ejs": "^3.1.8",
     "express": "^4.16.2",
     "express-session": "^1.17.2",

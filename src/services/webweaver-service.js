@@ -1,6 +1,7 @@
 "use strict";
 
 const Devebot = require("devebot");
+const Promise = Devebot.require("bluebird");
 const chores = Devebot.require("chores");
 const lodash = Devebot.require("lodash");
 const pinbug = Devebot.require("pinbug");
@@ -17,21 +18,18 @@ const cors = require("cors");
 const { DEFAULT_RUNLET_NAME, standardizeConfig } = require("app-webserver").require("runlet");
 
 function WebweaverService (params) {
-  params = params || {};
+  const { packageName, loggingFactory, sandboxConfig, webserverHandler } = params || {};
 
-  const L = params.loggingFactory.getLogger();
-  const T = params.loggingFactory.getTracer();
-  const packageName = params.packageName || "app-webweaver";
-  const blockRef = chores.getBlockRef(__filename, packageName);
-
-  const webserverHandler = params.webserverHandler;
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
+  const blockRef = chores.getBlockRef(__filename, packageName || "app-webweaver");
 
   //---------------------------------------------------------------------------
 
-  const sandboxConfig = standardizeConfig(params.sandboxConfig);
+  const pluginConfig = standardizeConfig(sandboxConfig);
 
   const _runlets = {};
-  lodash.forOwn(sandboxConfig.runlets, function(runletConfig, runletName) {
+  lodash.forOwn(pluginConfig.runlets, function(runletConfig, runletName) {
     _runlets[runletName] = new WebweaverRunlet({ L, T, blockRef, runletConfig, runletName, webserverHandler });
   });
 
@@ -41,6 +39,9 @@ function WebweaverService (params) {
 
   this.hasRunlet = function(runletName) {
     runletName = runletName || DEFAULT_RUNLET_NAME;
+    if (!webserverHandler.hasRunlet(runletName)) {
+      return false;
+    }
     return runletName in _runlets;
   };
 
@@ -48,6 +49,8 @@ function WebweaverService (params) {
     runletName = runletName || DEFAULT_RUNLET_NAME;
     return _runlets[runletName];
   };
+
+  //---------------------------------------------------------------------------
 
   // @deprecated
   this.getPrintRequestInfoLayer = function(branches, path) {
@@ -119,20 +122,36 @@ function WebweaverService (params) {
     return this.hasRunlet() && this.getRunlet().createStaticFilesLayer(layerDef, staticFilesDir) || undefined;
   };
 
+  // @deprecated
   this.push = function(layerOrBranches, priority) {
     return this.hasRunlet() && this.getRunlet().push(layerOrBranches, priority) || undefined;
   };
-  //
+
   this.combine = function() {
-    return this.hasRunlet() && this.getRunlet().combine() || undefined;
+    const runletNames = this.getRunletNames();
+    const selectedRunlets = [];
+    for (const runletName of runletNames) {
+      if (this.hasRunlet(runletName)) {
+        const selectedRunlet = this.getRunlet(runletName);
+        if (selectedRunlet) {
+          selectedRunlets.push(selectedRunlet);
+        }
+      }
+    }
+    //
+    return Promise.mapSeries(selectedRunlets, function(runlet) {
+      return runlet.combine();
+    });
   };
-  //
+
+  // @deprecated
   this.wire = function(slot, layerOrBranches, superTrail) {
     return this.hasRunlet() && this.getRunlet().wire(slot, layerOrBranches, superTrail) || undefined;
   };
-  //
+
+  // @deprecated
   this.inject = this.push;
-  //
+
   Object.defineProperties(this, {
     express: {
       get: function() {

@@ -15,7 +15,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const { DEFAULT_PORTLET_NAME, standardizeConfig } = require("app-webserver").require("portlet");
+const { portletifyConfig, PortletMixiner } = require("app-webserver").require("portlet");
 
 function WebweaverService (params) {
   const { packageName, loggingFactory, sandboxConfig, webserverHandler } = params || {};
@@ -26,29 +26,14 @@ function WebweaverService (params) {
 
   //---------------------------------------------------------------------------
 
-  const pluginConfig = standardizeConfig(sandboxConfig);
+  const pluginConfig = portletifyConfig(sandboxConfig);
 
-  const _portlets = {};
-  lodash.forOwn(pluginConfig.portlets, function(portletConfig, portletName) {
-    _portlets[portletName] = new WebweaverPortlet({ L, T, blockRef, portletConfig, portletName, webserverHandler });
+  PortletMixiner.call(this, {
+    pluginConfig,
+    portletForwarder: webserverHandler,
+    portletArguments: { L, T, blockRef, webserverHandler },
+    PortletConstructor: WebweaverPortlet,
   });
-
-  this.getPortletNames = function() {
-    return lodash.keys(_portlets);
-  };
-
-  this.hasPortlet = function(portletName) {
-    portletName = portletName || DEFAULT_PORTLET_NAME;
-    if (!webserverHandler.hasPortlet(portletName)) {
-      return false;
-    }
-    return portletName in _portlets;
-  };
-
-  this.getPortlet = function(portletName) {
-    portletName = portletName || DEFAULT_PORTLET_NAME;
-    return _portlets[portletName];
-  };
 
   //---------------------------------------------------------------------------
 
@@ -127,21 +112,10 @@ function WebweaverService (params) {
     return this.hasPortlet() && this.getPortlet().push(layerOrBranches, priority) || undefined;
   };
 
-  this.combine = function() {
-    const portletNames = this.getPortletNames();
-    const selectedPortlets = [];
-    for (const portletName of portletNames) {
-      if (this.hasPortlet(portletName)) {
-        const selectedPortlet = this.getPortlet(portletName);
-        if (selectedPortlet) {
-          selectedPortlets.push(selectedPortlet);
-        }
-      }
-    }
-    //
-    return Promise.mapSeries(selectedPortlets, function(portlet) {
+  this.combine = function (portletNames) {
+    return this.eachPortlets(function(portlet) {
       return portlet.combine();
-    });
+    }, portletNames);
   };
 
   // @deprecated
@@ -150,7 +124,7 @@ function WebweaverService (params) {
   };
 
   // @deprecated
-  this.inject = this.push;
+  this.inject = this.push.bind(this);
 
   Object.defineProperties(this, {
     express: {
@@ -167,6 +141,8 @@ function WebweaverService (params) {
     }
   });
 }
+
+Object.assign(WebweaverService.prototype, PortletMixiner.prototype);
 
 function WebweaverPortlet (params) {
   const { L, T, blockRef, portletConfig, portletName, webserverHandler } = params || {};

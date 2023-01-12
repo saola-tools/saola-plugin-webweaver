@@ -1,7 +1,6 @@
 "use strict";
 
 const Devebot = require("devebot");
-const Promise = Devebot.require("bluebird");
 const chores = Devebot.require("chores");
 const lodash = Devebot.require("lodash");
 const pinbug = Devebot.require("pinbug");
@@ -15,7 +14,8 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const { portletifyConfig, PortletMixiner } = require("app-webserver").require("portlet");
+const portlet = require("app-webserver").require("portlet");
+const { PORTLETS_COLLECTION_NAME, portletifyConfig, PortletMixiner } = portlet;
 
 function WebweaverService (params) {
   const { packageName, loggingFactory, sandboxConfig, webserverHandler } = params || {};
@@ -29,8 +29,10 @@ function WebweaverService (params) {
   const pluginConfig = portletifyConfig(sandboxConfig);
 
   PortletMixiner.call(this, {
-    pluginConfig,
-    portletForwarder: webserverHandler,
+    portletDescriptors: lodash.get(pluginConfig, PORTLETS_COLLECTION_NAME, {}),
+    portletAvailableChecker: function (parentPortletName) {
+      return webserverHandler.hasPortlet(parentPortletName);
+    },
     portletArguments: { L, T, blockRef, webserverHandler },
     PortletConstructor: WebweaverPortlet,
   });

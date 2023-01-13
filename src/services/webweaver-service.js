@@ -140,12 +140,16 @@ function WebweaverService (params) {
 
 Object.assign(WebweaverService.prototype, PortletMixiner.prototype);
 
+WebweaverService.referenceHash = {
+  webserverHandler: "app-webserver/webserverHandler"
+};
+
 function WebweaverPortlet (params) {
   const { packageName, loggingFactory, portletConfig, portletName, webserverHandler } = params || {};
 
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
-  const blockRef = chores.getBlockRef(__filename, packageName || "app-webweaver");
+  const blockRef = chores.getBlockRef(__filename, packageName);
 
   L && L.has("silly") && L.log("silly", T && T.add({ portletName }).toMessage({
     tags: [ blockRef, "WebweaverPortlet", "starting" ],
@@ -535,12 +539,6 @@ function WebweaverPortlet (params) {
   });
 }
 
-WebweaverService.referenceHash = {
-  webserverHandler: "app-webserver/webserverHandler"
-};
-
-module.exports = WebweaverService;
-
 function wire (context, slot, layerOrBranches, superTrail) {
   if (lodash.isArray(layerOrBranches)) {
     return wireBranches(context, slot, layerOrBranches, superTrail);
@@ -699,3 +697,5 @@ function getErrorMappingId (error) {
   }
   return mappingId;
 }
+
+module.exports = WebweaverService;

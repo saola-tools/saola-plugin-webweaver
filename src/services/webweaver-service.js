@@ -20,20 +20,14 @@ const { PORTLETS_COLLECTION_NAME, portletifyConfig, PortletMixiner } = portlet;
 function WebweaverService (params) {
   const { packageName, loggingFactory, sandboxConfig, webserverHandler } = params || {};
 
-  const L = loggingFactory.getLogger();
-  const T = loggingFactory.getTracer();
-  const blockRef = chores.getBlockRef(__filename, packageName || "app-webweaver");
-
   //---------------------------------------------------------------------------
 
   const pluginConfig = portletifyConfig(sandboxConfig);
 
   PortletMixiner.call(this, {
-    portletDescriptors: lodash.get(pluginConfig, PORTLETS_COLLECTION_NAME, {}),
-    portletAvailableChecker: function (parentPortletName) {
-      return webserverHandler.hasPortlet(parentPortletName);
-    },
-    portletArguments: { L, T, blockRef, webserverHandler },
+    portletDescriptors: lodash.get(pluginConfig, PORTLETS_COLLECTION_NAME),
+    portletReferenceHolders: { webserverHandler },
+    portletArguments: { packageName, loggingFactory },
     PortletConstructor: WebweaverPortlet,
   });
 
@@ -147,7 +141,16 @@ function WebweaverService (params) {
 Object.assign(WebweaverService.prototype, PortletMixiner.prototype);
 
 function WebweaverPortlet (params) {
-  const { L, T, blockRef, portletConfig, portletName, webserverHandler } = params || {};
+  const { packageName, loggingFactory, portletConfig, portletName, webserverHandler } = params || {};
+
+  const L = loggingFactory.getLogger();
+  const T = loggingFactory.getTracer();
+  const blockRef = chores.getBlockRef(__filename, packageName || "app-webweaver");
+
+  L && L.has("silly") && L.log("silly", T && T.add({ portletName }).toMessage({
+    tags: [ blockRef, "WebweaverPortlet", "starting" ],
+    text: " - portlet: ${portletName}"
+  }));
 
   const apporo = express();
 
@@ -156,7 +159,7 @@ function WebweaverPortlet (params) {
     set: function(value) {}
   });
 
-  webserverHandler.getPortlet(portletName).attach(apporo);
+  webserverHandler.attach(apporo);
 
   //---------------------------------------------------------------------------
 

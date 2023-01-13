@@ -4,6 +4,7 @@ module.exports = {
   plugins: {
     appWebweaver: {
       portlets: {
+        default: {},
         manager: {
           defaultRedirectUrl: "/example/dashboard",
           cors: {
@@ -42,6 +43,7 @@ module.exports = {
     },
     appWebserver: {
       portlets: {
+        default: {},
         manager: {
           host: "0.0.0.0",
           port: 17979

@@ -3,17 +3,17 @@
 const axios = require("axios");
 const { assert } = require("liberica");
 
-const Devebot = require("devebot");
+const Devebot = require("@saola/core");
 const chores = Devebot.require("chores");
 
 const app = require("../app/simplest");
 const example = require("../app/example");
 
-describe("app-webweaver", function() {
+describe("saola-plugin-webweaver", function() {
   describe("server-life-cycle", function() {
     before(function() {
       chores.setEnvironments({
-        DEVEBOT_FORCING_SILENT: "devebot,webserver",
+        SAOLA_FORCING_SILENT: "framework,webserver",
         LOGOLITE_FULL_LOG_MODE: "false",
         LOGOLITE_ALWAYS_ENABLED: "all",
         LOGOLITE_ALWAYS_MUTED: "all"

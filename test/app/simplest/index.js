@@ -2,10 +2,10 @@
 
 const path = require("path");
 
-const app = require("devebot").launchApplication({
+const app = require("@saola/core").launchApplication({
   appRootPath: __dirname
 }, [{
-  name: "app-webweaver",
+  name: "@saola/plugin-webweaver",
   path: path.join(__dirname, "../../../", "index.js")
 }]);
 

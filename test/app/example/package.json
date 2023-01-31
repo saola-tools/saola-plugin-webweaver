@@ -1,11 +1,11 @@
 {
-  "name": "app-webweaver-example",
+  "name": "saola-plugin-webweaver-example",
   "version": "0.1.0",
-  "description": "Devebot app-webweaver Example",
+  "description": "Saola webweaver plugin Example",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "devebot",
+  "author": "SaolaJS",
   "license": "MIT"
 }

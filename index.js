@@ -1,6 +1,6 @@
 "use strict";
 
-const plugin = require("devebot").registerLayerware(__dirname, ["app-webserver"]);
+const plugin = require("@saola/core").registerLayerware(__dirname, ["@saola/plugin-webserver"]);
 
 const builtinPackages = [
   "express",

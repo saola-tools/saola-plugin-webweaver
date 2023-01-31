@@ -1,6 +1,6 @@
 module.exports = {
   newFeatures: {
-    appWebweaver: {
+    pluginWebweaver: {
       logoliteEnabled: true,
       sandboxConfig: true
     }

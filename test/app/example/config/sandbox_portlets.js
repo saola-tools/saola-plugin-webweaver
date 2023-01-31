@@ -2,7 +2,7 @@
 
 module.exports = {
   plugins: {
-    appWebweaver: {
+    pluginWebweaver: {
       portlets: {
         default: {},
         manager: {
@@ -41,7 +41,7 @@ module.exports = {
         }
       }
     },
-    appWebserver: {
+    pluginWebserver: {
       portlets: {
         default: {},
         manager: {

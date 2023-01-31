@@ -3,7 +3,7 @@ module.exports = {
     enabled: true
   },
   plugins: {
-    appWebweaver: {
+    pluginWebweaver: {
       defaultRedirectUrl: "/example/dashboard",
       cors: {
         enabled: true,
@@ -37,7 +37,7 @@ module.exports = {
         }
       }
     },
-    appWebserver: {
+    pluginWebserver: {
       host: "0.0.0.0",
       port: 7979
     }

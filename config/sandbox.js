@@ -1,6 +1,6 @@
 module.exports = {
   plugins: {
-    appWebweaver: {
+    pluginWebweaver: {
       sslProtectedUrls: [],
       session: {
         name: "sessionId",

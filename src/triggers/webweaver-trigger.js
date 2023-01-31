@@ -1,6 +1,6 @@
 "use strict";
 
-const Devebot = require("devebot");
+const Devebot = require("@saola/core");
 const Promise = Devebot.require("bluebird");
 const chores = Devebot.require("chores");
 
@@ -9,7 +9,7 @@ function WebweaverTrigger (params) {
 
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();
-  const blockRef = chores.getBlockRef(__filename, packageName || "app-webweaver");
+  const blockRef = chores.getBlockRef(__filename, packageName);
 
   this.start = function() {
     L && L.has("silly") && L.log("silly", T && T.add({ blockRef }).toMessage({

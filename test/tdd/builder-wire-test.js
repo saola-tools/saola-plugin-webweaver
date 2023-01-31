@@ -9,8 +9,8 @@
  * -
  */
 
-const devebot = require("devebot");
-const lodash = devebot.require("lodash");
+const Devebot = require("@saola/core");
+const lodash = Devebot.require("lodash");
 const assert = require("liberica").assert;
 const mockit = require("liberica").mockit;
 const sinon = require("liberica").sinon;
@@ -26,7 +26,7 @@ describe.skip("builder", function() {
     const ctx = {
       LX: loggingFactory.getLogger(),
       LT: loggingFactory.getTracer(),
-      blockRef: "app-webweaver/wire",
+      blockRef: "@saola/plugin-webweaver/webweaverService",
       express,
     };
 

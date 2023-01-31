@@ -1,6 +1,6 @@
 "use strict";
 
-const Devebot = require("devebot");
+const Devebot = require("@saola/core");
 const chores = Devebot.require("chores");
 const lodash = Devebot.require("lodash");
 const pinbug = Devebot.require("pinbug");
@@ -9,7 +9,7 @@ const util = require("util");
 const targetPortlet = "manager";
 
 function Service (params) {
-  const debugx = pinbug("app-webweaver:example");
+  const debugx = pinbug("saola-plugin-webweaver:example");
   debugx.enabled && debugx(" + constructor begin ...");
 
   params = params || {};

@@ -1,6 +1,6 @@
 "use strict";
 
-const Devebot = require("devebot");
+const Devebot = require("@saola/core");
 const chores = Devebot.require("chores");
 const lodash = Devebot.require("lodash");
 const pinbug = Devebot.require("pinbug");
@@ -14,7 +14,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const portlet = require("app-webserver").require("portlet");
+const portlet = require("@saola/plugin-webserver").require("portlet");
 const { getPortletDescriptors, PortletMixiner } = portlet;
 
 function WebweaverService (params = {}) {
@@ -140,7 +140,7 @@ function WebweaverService (params = {}) {
 Object.assign(WebweaverService.prototype, PortletMixiner.prototype);
 
 WebweaverService.referenceHash = {
-  webserverHandler: "app-webserver/webserverHandler"
+  webserverHandler: "@saola/plugin-webserver/webserverHandler"
 };
 
 function WebweaverPortlet (params = {}) {
@@ -176,7 +176,7 @@ function WebweaverPortlet (params = {}) {
   this.getPrintRequestInfoLayer = function(branches, path) {
     let debugx = null;
     let printRequestInfoInstance = function(req, res, next) {
-      debugx = debugx || pinbug("app-webweaver:service");
+      debugx = debugx || pinbug("saola-plugin-webweaver:service");
       process.nextTick(function() {
         debugx.enabled && debugx("=@ webweaver receives a new request:");
         debugx.enabled && debugx(" - IP: %s / %s", req.ip, JSON.stringify(req.ips));
@@ -449,7 +449,7 @@ function WebweaverPortlet (params = {}) {
 
   this.settleBranchQueueLayer = function(branchQueue, name) {
     branchQueue = branchQueue || {
-      name: name || "app-webweaver-unknown",
+      name: name || "saola-plugin-webweaver-unknown",
       middleware: express()
     };
     return branchQueue;

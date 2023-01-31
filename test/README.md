@@ -1,4 +1,4 @@
-# app-webweaver test/example
+# saola-plugin-webweaver test/example
 
 ## Usage
 
@@ -7,7 +7,7 @@
 Start the web server:
 
 ```shell
-export DEBUG=devebot*,app*
+export DEBUG=saola*,app*
 export LOGOLITE_DEBUGLOG_ENABLED=true
 node test/app/example
 ```
@@ -21,9 +21,9 @@ curl http://0.0.0.0:7979/example/1234567890
 ### Multiple servers
 
 ```shell
-export DEBUG=devebot*,app*
+export DEBUG=saola*,app*
 export LOGOLITE_DEBUGLOG_ENABLED=true
-export DEVEBOT_SANDBOX=portlets
+export SAOLA_SANDBOX=portlets
 node test/app/example
 ```
 

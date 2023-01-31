@@ -15,17 +15,16 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const portlet = require("app-webserver").require("portlet");
-const { PORTLETS_COLLECTION_NAME, portletifyConfig, PortletMixiner } = portlet;
+const { getPortletDescriptors, PortletMixiner } = portlet;
 
-function WebweaverService (params) {
-  const { packageName, loggingFactory, sandboxConfig, webserverHandler } = params || {};
+function WebweaverService (params = {}) {
+  const { packageName, loggingFactory, sandboxBaseConfig, sandboxConfig, webserverHandler } = params;
 
   //---------------------------------------------------------------------------
 
-  const pluginConfig = portletifyConfig(sandboxConfig);
-
   PortletMixiner.call(this, {
-    portletDescriptors: lodash.get(pluginConfig, PORTLETS_COLLECTION_NAME),
+    portletBaseConfig: sandboxBaseConfig,
+    portletDescriptors: getPortletDescriptors(sandboxConfig),
     portletReferenceHolders: { webserverHandler },
     portletArguments: { packageName, loggingFactory },
     PortletConstructor: WebweaverPortlet,
@@ -144,8 +143,8 @@ WebweaverService.referenceHash = {
   webserverHandler: "app-webserver/webserverHandler"
 };
 
-function WebweaverPortlet (params) {
-  const { packageName, loggingFactory, portletConfig, portletName, webserverHandler } = params || {};
+function WebweaverPortlet (params = {}) {
+  const { packageName, loggingFactory, portletConfig, portletName, webserverHandler } = params;
 
   const L = loggingFactory.getLogger();
   const T = loggingFactory.getTracer();

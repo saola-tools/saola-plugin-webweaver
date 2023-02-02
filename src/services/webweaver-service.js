@@ -14,7 +14,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const portlet = require("@saola/plugin-webserver").require("portlet");
+const portlet = Devebot.require("portlet");
 const { getPortletDescriptors, PortletMixiner } = portlet;
 
 function WebweaverService (params = {}) {

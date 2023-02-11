@@ -1,13 +1,8 @@
 {
   "name": "@saola/plugin-webweaver",
   "version": "0.4.2",
-  "description": "Saola express-based webweaver layerware",
-  "homepage": "https://github.com/saolajs/saola-plugin-webweaver.git",
-  "author": {
-    "name": "SaolaJS",
-    "email": "contact@saolajs.com",
-    "url": "https://github.com/saolajs"
-  },
+  "description": "Saola express-based Web Weaver plugin",
+  "author": "Saola Development Team",
   "main": "index.js",
   "directories": {
     "lib": "lib/"
@@ -31,6 +26,10 @@
     "test": "npm run testOnly",
     "prepublishOnly": "npm run check-silent && npm run clean && NODE_ENV=${DEVEBOT_NODE_ENV:-production} npm run build",
     "verify": "npm run prepublishOnly && npm run testOnly"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saola-tools/saola-plugin-webweaver.git"
   },
   "keywords": [
     "saola",
